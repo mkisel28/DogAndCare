@@ -1,0 +1,6 @@
+*.pyc
+**.pyc
+**.env
+*.env
+*.xml
+.coverage
