@@ -7,7 +7,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def str_to_bool(value: str) -> bool:
-    """Преобразует строку 'True'/'False' в булево значение."""
     return value.lower() in ("true", "1", "yes")
 
 
@@ -16,6 +15,8 @@ SECRET_KEY = "django-insecure-7v@5@hz@iya)n2^^5zn#y8ues%y8gi5c^#+47px^2k*)6f9by9
 DEBUG = str_to_bool(os.environ.get("DJANGO_DEBUG", "False"))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+
+
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
@@ -34,11 +35,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/dj_media/"
 MEDIA_ROOT = BASE_DIR / "mediafiles"
 
-LANGUAGE_CODE = "ru"
+LANGUAGE_CODE = "en"
 
 LANGUAGES = (
-    ("ru", _("Russian")),
     ("en", _("English")),
+    ("ru", _("Russian")),
 )
 
 LOCALE_PATHS = [

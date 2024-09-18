@@ -22,7 +22,7 @@ class JWTUserMiddleware(MiddlewareMixin):
             response = Response(
                 {
                     "status": "error",
-                    "detail": "Неизвестная ошибка",
+                    "detail": "Unknown Error",
                     "code": "unknown_error",
                     "messages": [{"message": str(exc)}],
                 },

@@ -14,8 +14,8 @@ ALLOWED_HOSTS = ["*"]
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
-        "NAME": os.environ.get("DB_NAME", "dog_care"),
         "USER": os.environ.get("DB_USER", "postgres"),
+        "NAME": os.environ.get("DB_NAME", "dog_care"),
         "PASSWORD": os.environ.get("DB_PASSWORD", "Maksim2001"),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", 5432),
@@ -44,3 +44,4 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 TIME_ZONE = "UTC"
+

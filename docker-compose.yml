@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgresDogAndCare
+      POSTGRES_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
+      POSTGRES_DB: dogandcare
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - db_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgresDogAndCare -d dogandcare"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1'
+
+  web:
+    build: .
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --threads 2 --worker-class=gthread --timeout 120
+      "
+    environment:
+      DB_NAME: dogandcare
+      DB_USER: postgresDogAndCare
+      DB_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
+      DB_HOST: db 
+      DB_PORT: 5432
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://zn.by,https://zn.by,http://93.85.84.214
+      CORS_ALLOW_CREDENTIALS: True
+      CSRF_TRUSTED_ORIGINS: http://localhost:3000,http://zn.by,https://zn.by,http://93.85.84.214
+    volumes:
+      - django_static_volume:/app/staticfiles
+      - django_media_volume:/app/mediafiles
+      - /var/log/django:/var/log/django
+    networks:
+      - db_net
+      - web_net
+    depends_on:
+      - db
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1'
+
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - django_static_volume:/app/staticfiles
+      - django_media_volume:/app/mediafiles
+    ports:
+      - "80:80"
+      - "8000:8000"
+    depends_on:
+      - web
+    networks:
+      - web_net
+    restart: always
+
+networks:
+  web_net:
+  db_net:
+
+volumes:
+  django_static_volume:
+  django_media_volume:
+  postgres_data:
+

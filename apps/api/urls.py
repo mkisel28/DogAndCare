@@ -6,12 +6,17 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from apps.api.v1.authentication.views.views import (
+    EmailAuthRequestView,
+    CustomRegisterView,
+    CustomVerifyEmailView,
+)
+from dj_rest_auth.registration.views import RegisterView
+
 urlpatterns = [
     path("v1/", include("apps.api.v1.urls")),
-    path("auth/", include("dj_rest_auth.urls")),
-    path(
-        "auth/registration/", include("dj_rest_auth.registration.urls")
-    ),
+    path("auth/", include("apps.authentication.urls")),
+
     path("schema-yaml/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"

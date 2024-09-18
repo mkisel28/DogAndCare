@@ -1,4 +1,9 @@
 from rest_framework import permissions
+from rest_framework.permissions import BasePermission
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.response import Response
+from rest_framework import status
 import logging
 
 logger = logging.getLogger(__name__)
@@ -6,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 class AdminFullAccessAuthenticatedReadOnly(permissions.BasePermission):
     """
-    Разрешения:
-    - Все действия доступны администратору.
-    - Только просмотр доступен аутентифицированным пользователям.
-    - 403 Forbidden для неаутентифицированных.
+    Permissions:
+    - All actions are allowed for the administrator.
+    - Only read access is allowed for authenticated users.
+    - 403 Forbidden for unauthenticated users.
     """
 
     def has_permission(self, request, view):
@@ -17,7 +22,6 @@ class AdminFullAccessAuthenticatedReadOnly(permissions.BasePermission):
         try:
             if DEBUG:
                 return True
-            # Разрешить все действия администратору
             if request.user and request.user.is_staff:
                 logger.info(
                     "Доступ предоставлен администратору", extra={"request": request}
@@ -46,23 +50,3 @@ class AdminFullAccessAuthenticatedReadOnly(permissions.BasePermission):
                 f"Ошибка в проверке разрешений: {str(e)}", extra={"request": request}
             )
             return False
-
-
-from rest_framework.permissions import BasePermission
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.response import Response
-from rest_framework import status
-
-
-class CustomIsAuthenticated(BasePermission):
-
-    def has_permission(self, request, view):
-        # Проверка аутентификации пользователя
-        if not request.user or not request.user.is_authenticated:
-            raise AuthenticationFailed(
-                "Authentication credentials were not provided or are invalid."
-            )
-
-        # Если пользователь аутентифицирован, возвращаем True
-        return True

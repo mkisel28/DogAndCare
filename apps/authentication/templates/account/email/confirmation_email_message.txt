@@ -1,0 +1,10 @@
+Welcome toDog&Care, where caring for your dog just got easier! We're excited to have you on board.
+
+To verify your account, simply enter this code in the next 10 minutes to log in:
+
+{{ code }}
+
+If you didn’t request this code, ignore this email.
+
+Happy tails ahead! 🐾
+The Dog&Care Team

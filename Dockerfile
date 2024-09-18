@@ -19,15 +19,11 @@ RUN pip install --upgrade pip && \
     pip install poetry
 
 
-# Настроим Poetry
 RUN poetry config virtualenvs.create false 
 
 RUN poetry install --no-interaction --no-ansi
 
 COPY . .
 
-RUN poetry install --no-interaction --no-ansi
-
-COPY ./staticfiles /app/staticfiles
 
 EXPOSE 8000

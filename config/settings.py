@@ -31,8 +31,10 @@ INSTALLED_APPS = [
     # -- REST --
     "apps.locations",
     "apps.users",
+    "apps.authentication",
     "apps.media",
     "apps.api",
+    "apps.pets",
 ]
 
 
@@ -68,7 +70,6 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
     "CSRF_TRUSTED_ORIGINS",
     "http://localhost:3000",
 ).split(",")
-
 
 CORS_ALLOW_ALL_ORIGINS = False
 
@@ -116,7 +117,7 @@ CACHES = {
     }
 }
 
-CACHE_TIMEOUT = 3600  # 1 час
+CACHE_TIMEOUT = 3600
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -153,9 +154,10 @@ JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "secret")
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": True,
     "SIGNING_KEY": JWT_SECRET_KEY,
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=120),
@@ -167,39 +169,36 @@ SITE_ID = 1
 REST_AUTH = {
     "REST_USE_JWT": True,
     "USE_JWT": True,
-    "JWT_AUTH_COOKIE": "access-token",
-    "JWT_AUTH_REFRESH_COOKIE": "refresh-token",
     "JWT_AUTH_SECURE": True,
     "REST_SESSION_LOGIN": False,
     "LOGOUT_ON_PASSWORD_CHANGE": False,
     "JWT_AUTH_HTTPONLY": True,
     "USER_DETAILS_SERIALIZER": "apps.api.v1.users.serializer.serializers.UserSerializer",
-    "REGISTER_SERIALIZER": "apps.api.v1.users.serializer.serializers.CustomRegisterSerializer",
+    "REGISTER_SERIALIZER": "apps.api.v1.authentication.serializer.serializers.CustomRegisterSerializer",
+    "LOGIN_SERIALIZER": "apps.api.v1.authentication.serializer.serializers.CustomLoginSerializer",
     "UNIQUE_EMAIL": True,
     "JWT_AUTH_SAMESITE": "None",
 }
 
 REST_USE_JWT = True
-# Настройка allauth
+# allauth
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
-ACCOUNT_EMAIL_VERIFICATION = "none"
-
-
-GEOIP_PATH = os.path.join(BASE_DIR, "GeoLite2-City.mmdb")
-
-
-NBRB_API_URL = os.environ.get(
-    "NBRB_API_URL", "https://api.nbrb.by/exrates/rates?periodicity=0"
-)
-CURRENCIES = os.environ.get("CURRENCIES", "USD,EUR,RUB").split(",")
-
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+AUTHENTICATION_BACKENDS = ("allauth.account.auth_backends.AuthenticationBackend",)
+ACCOUNT_ADAPTER = "config.adapters.AccountAdapter"
 
 LOG_DIR = BASE_DIR / "logs"
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR)
+access_log_dir = LOG_DIR / "access"
+info_log_dir = LOG_DIR / "info"
+error_log_dir = LOG_DIR / "error"
+
+for log_dir in [LOG_DIR, access_log_dir, info_log_dir, error_log_dir]:
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
 
 LOG_FILE_MAX_SIZE = 5 * 1024 * 1024
 LOG_FILE_BACKUP_COUNT = 5
@@ -230,7 +229,7 @@ LOGGING = {
         "all": {
             "level": "DEBUG",
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(LOG_DIR, "all.log"),
+            "filename": str(LOG_DIR / "all.log"),
             "maxBytes": LOG_FILE_MAX_SIZE,
             "backupCount": LOG_FILE_BACKUP_COUNT,
             "formatter": "verbose",
@@ -238,7 +237,7 @@ LOGGING = {
         "file": {
             "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(LOG_DIR, "info.log"),
+            "filename": str(info_log_dir / "info.log"),
             "maxBytes": LOG_FILE_MAX_SIZE,
             "backupCount": LOG_FILE_BACKUP_COUNT,
             "formatter": "verbose",
@@ -246,7 +245,7 @@ LOGGING = {
         "error_file": {
             "level": "ERROR",
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(LOG_DIR, "errors.log"),
+            "filename": str(error_log_dir / "errors.log"),
             "maxBytes": LOG_FILE_MAX_SIZE,
             "backupCount": LOG_FILE_BACKUP_COUNT,
             "formatter": "verbose",
@@ -254,7 +253,7 @@ LOGGING = {
         "access_file": {
             "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(LOG_DIR, "access.log"),
+            "filename": str(access_log_dir / "access.log"),
             "maxBytes": LOG_FILE_MAX_SIZE,
             "backupCount": LOG_FILE_BACKUP_COUNT,
             "formatter": "user",
@@ -287,6 +286,22 @@ LOGGING = {
         },
     },
 }
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.yandex.ru'
+# EMAIL_PORT = 465
+# EMAIL_USE_SSL = True
+# EMAIL_HOST_USER = 'mr@phmax.ru'
+# EMAIL_HOST_PASSWORD = 'hsvzxkuexagapvcz'
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = "mkisel28@gmail.com"
+EMAIL_HOST_PASSWORD = "yopf icrp hzoo ztxx"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 try:
     from .local_settings import *
