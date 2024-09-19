@@ -44,7 +44,7 @@ services:
       "
     environment:
       DJANGO_DEBUG: True
-      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,88.218.93.26
       DB_NAME: dogandcare
       DB_USER: postgresDogAndCare
       DB_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
