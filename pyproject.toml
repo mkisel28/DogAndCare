@@ -23,6 +23,9 @@ pillow = "^10.4.0"
 dj-rest-auth = "^6.0.0"
 django-allauth = "^64.0.0"
 requests = "^2.32.3"
+celery = "^5.4.0"
+redis = "^5.0.8"
+flower = "^2.0.1"
 
 
 [build-system]

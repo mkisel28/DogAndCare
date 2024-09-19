@@ -287,13 +287,6 @@ LOGGING = {
     },
 }
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.yandex.ru'
-# EMAIL_PORT = 465
-# EMAIL_USE_SSL = True
-# EMAIL_HOST_USER = 'mr@phmax.ru'
-# EMAIL_HOST_PASSWORD = 'hsvzxkuexagapvcz'
-# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
@@ -302,6 +295,37 @@ EMAIL_USE_SSL = True
 EMAIL_HOST_USER = "mkisel28@gmail.com"
 EMAIL_HOST_PASSWORD = "yopf icrp hzoo ztxx"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+# Redis как брокер сообщений
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get(
+    "CELERY_RESULT_BACKEND", "redis://localhost:6379/0"
+)
+
+# Префикс для задач, чтобы можно было группировать их по проекту
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 минут для задачи
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # Мягкий тайм-аут
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+# Настройка отказоустойчивости (retry для задач)
+CELERY_RETRY_DELAY = 60  
+CELERY_MAX_RETRIES = 3  
+CELERY_ACKS_LATE = True  # задачи будут отмечены выполненными только после завершения
+
+CELERY_WORKER_MAX_TASKS_PER_CHILD = (
+    1000  # Перезапуск воркера после 100 задач (защита от утечек памяти)
+)
+CELERY_WORKER_CONCURRENCY = (
+    4  # Число воркеров
+)
+
+CELERY_ENABLE_UTC = True
+CELERY_TIMEZONE = "UTC"
+
 
 try:
     from .local_settings import *

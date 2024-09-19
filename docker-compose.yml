@@ -23,6 +23,17 @@ services:
           memory: 1G
           cpus: '1'
 
+  redis:
+    image: redis:alpine
+    networks:
+      - web_net
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+          cpus: '0.5'
+
   web:
     build: .
     command: >
@@ -37,9 +48,11 @@ services:
       DB_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
       DB_HOST: db 
       DB_PORT: 5432
-      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://zn.by,https://zn.by,http://93.85.84.214
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://88.218.93.26
       CORS_ALLOW_CREDENTIALS: True
-      CSRF_TRUSTED_ORIGINS: http://localhost:3000,http://zn.by,https://zn.by,http://93.85.84.214
+      CSRF_TRUSTED_ORIGINS: http://localhost:3000,http://88.218.93.26
     volumes:
       - django_static_volume:/app/staticfiles
       - django_media_volume:/app/mediafiles
@@ -49,6 +62,7 @@ services:
       - web_net
     depends_on:
       - db
+      - redis
     restart: always
     deploy:
       resources:
@@ -69,6 +83,69 @@ services:
       - web
     networks:
       - web_net
+    restart: always
+
+
+  celery1:
+    build: .
+    command: celery -A config worker --loglevel=info --concurrency=4 --hostname=worker1@%h --max-tasks-per-child=1000
+    environment:
+      DB_NAME: dogandcare
+      DB_USER: postgresDogAndCare
+      DB_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
+      DB_HOST: db
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    networks:
+      - web_net
+    depends_on:
+      - db
+      - redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+          cpus: '0.5'
+
+  celery2:
+    build: .
+    command: celery -A config worker --loglevel=info --concurrency=4 --hostname=worker2@%h --max-tasks-per-child=1000
+    environment:
+      DB_NAME: dogandcare
+      DB_USER: postgresDogAndCare
+      DB_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
+      DB_HOST: db
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    networks:
+      - web_net
+    depends_on:
+      - db
+      - redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+          cpus: '0.5'
+
+  flower:
+    build: .
+    command: celery -A config flower 
+    environment:
+      BROKER_URL: redis://redis:6379/0
+      RESULT_BACKEND: redis://redis:6379/0
+      FLOWER_BASIC_AUTH: test:test
+    ports:
+      - "5555:5555"
+    networks:
+      - web_net
+    depends_on:
+      - redis
+      - celery
     restart: always
 
 networks:

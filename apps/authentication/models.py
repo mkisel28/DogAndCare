@@ -29,7 +29,7 @@ class EmailVerificationCode(models.Model):
     @staticmethod
     def generate_code():
         return "{:06d}".format(random.randint(100000, 999999))
-    
+
     @staticmethod
     def create_code(user):
         """
@@ -41,6 +41,3 @@ class EmailVerificationCode(models.Model):
         """
         code = EmailVerificationCode.generate_code()
         return EmailVerificationCode.objects.create(user=user, code=code), code
-
-
-

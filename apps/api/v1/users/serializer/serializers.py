@@ -9,7 +9,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ["date_of_birth", "bio"]
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(
         source="profile.avatar", read_only=False, required=False
@@ -48,9 +47,12 @@ class UserSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 class TokensSerializer(serializers.Serializer):
     access = serializers.CharField()
     refresh = serializers.CharField()
+
+
 class AuthUserSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     tokens = TokensSerializer()
@@ -61,5 +63,10 @@ class AuthUserSerializer(serializers.ModelSerializer):
 
 
 class LogoutSerializer(serializers.Serializer):
-    refresh_token = serializers.CharField(required=False, help_text="Refresh токен, который нужно деактивировать")
-    all_tokens = serializers.BooleanField(required=False, help_text="Если true, будут деактивированы все refresh токены пользователя")
+    refresh_token = serializers.CharField(
+        required=False, help_text="Refresh токен, который нужно деактивировать"
+    )
+    all_tokens = serializers.BooleanField(
+        required=False,
+        help_text="Если true, будут деактивированы все refresh токены пользователя",
+    )

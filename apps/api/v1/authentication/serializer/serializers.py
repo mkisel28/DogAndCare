@@ -30,11 +30,11 @@ class CustomRegisterSerializer(RegisterSerializer):
     password1 = None
     password2 = None
 
-
     def get_cleaned_data(self):
         return {
             "email": self.validated_data.get("email", ""),
         }
+
     def validate_password1(self, password):
         pass
 
@@ -73,5 +73,3 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 class CustomLoginSerializer(LoginSerializer):
     username = None
     email = serializers.EmailField(required=True)
-
-

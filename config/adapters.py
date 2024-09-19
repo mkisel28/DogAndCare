@@ -7,7 +7,9 @@ from apps.authentication.models import EmailVerificationCode
 
 
 class AccountAdapter(DefaultAccountAdapter):
-    def send_confirmation_mail(self, request, emailconfirmation=None, signup=False, user=None):
+    def send_confirmation_mail(
+        self, request, emailconfirmation=None, signup=False, user=None
+    ):
         user = user or emailconfirmation.email_address.user
 
         code = EmailVerificationCode.generate_code()

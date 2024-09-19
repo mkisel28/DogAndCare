@@ -36,7 +36,14 @@ from dj_rest_auth.registration.views import VerifyEmailView, RegisterView
 
 from apps.authentication.models import EmailVerificationCode
 from allauth.account.models import EmailAddress
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse, OpenApiParameter
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiExample,
+    OpenApiResponse,
+    OpenApiParameter,
+)
+
+from apps.authentication.tasks import send_verification_email
 
 
 @extend_schema(
@@ -138,6 +145,7 @@ from allauth.account.models import EmailAddress
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
+
 @extend_schema(
     tags=["Authentication"],
     request=CustomRegisterSerializer,
@@ -150,11 +158,9 @@ from django.utils.html import strip_tags
                 OpenApiExample(
                     name="Код отправлен для авторизации",
                     summary="Пользователь существует и код отправлен для входа",
-                    value={
-                        "detail": "Verification code sent to email"
-                    }
+                    value={"detail": "Verification code sent to email"},
                 )
-            ]
+            ],
         ),
         status.HTTP_201_CREATED: OpenApiResponse(
             response=dict,
@@ -163,11 +169,9 @@ from django.utils.html import strip_tags
                 OpenApiExample(
                     name="Пользователь зарегистрирован",
                     summary="Создан новый пользователь и отправлен код для подтверждения",
-                    value={
-                        "detail": "User registered and verification code sent"
-                    }
+                    value={"detail": "User registered and verification code sent"},
                 )
-            ]
+            ],
         ),
         status.HTTP_400_BAD_REQUEST: OpenApiResponse(
             response=dict,
@@ -176,16 +180,16 @@ from django.utils.html import strip_tags
                 OpenApiExample(
                     name="Некорректный email",
                     summary="Неверный формат email или другие ошибки валидации",
-                    value={"email": ["Enter a valid email address."]}
+                    value={"email": ["Enter a valid email address."]},
                 ),
                 OpenApiExample(
                     name="Email не указан",
                     summary="Email не указан в запросе",
-                    value={"email": ["This field is required."]}
+                    value={"email": ["This field is required."]},
                 ),
-            ]
+            ],
         ),
-    }
+    },
 )
 class EmailAuthRequestView(CreateAPIView):
     """
@@ -207,6 +211,7 @@ class EmailAuthRequestView(CreateAPIView):
     Ошибки:
     - **HTTP 400**: В случае ошибки валидации email.
     """
+
     serializer_class = CustomRegisterSerializer
     permission_classes = [AllowAny]
 
@@ -248,14 +253,14 @@ class EmailAuthRequestView(CreateAPIView):
         )
         plain_message = strip_tags(html_message)
 
-        send_email(
+        send_verification_email.delay(
             subject=f"[{code}] Your Verification Code for Dog&Care",
-            message=plain_message,
+            plain_message=plain_message,
             from_email=None,
             recipient_list=[user.email],
-            fail_silently=False,
             html_message=html_message,
         )
+
         return Response(data, status=status_code)
 
 
@@ -271,7 +276,6 @@ class EmailAuthRequestView(CreateAPIView):
                 OpenApiExample(
                     name="Успешная авторизация",
                     summary="Email подтвержден или пользователь авторизован",
-
                 ),
             ],
         ),
@@ -319,7 +323,7 @@ class CustomVerifyEmailView(VerifyEmailView):
     Подтверждение email и авторизация через JWT.
 
     Этот API выполняет две основные функции:
-    
+
     1. **Подтверждение email**:
        Если пользователь только что зарегистрирован и его почта ещё не подтверждена, он отправляет 6-значный код для подтверждения. После успешного подтверждения почты возвращаются JWT токены для авторизации, и ответ содержит статус 201 (Created).
 
@@ -334,7 +338,7 @@ class CustomVerifyEmailView(VerifyEmailView):
     Возможные ошибки:
     - 404: Пользователь с таким email не найден.
     - 400: Неверный код подтверждения или срок действия кода истёк.
-    
+
     После успешного подтверждения или авторизации возвращаются данные пользователя и токены для доступа.
     """
 
@@ -458,7 +462,7 @@ class PasswordResetConfirmView(APIView):
 
 
 @extend_schema(
-    tags=["Authentication"], 
+    tags=["Authentication"],
     request=LogoutSerializer,
     summary="Выход пользователя",
     responses={
@@ -573,25 +577,38 @@ class APILogoutView(APIView):
             if self.request.data.get("all_tokens", False):
                 tokens = OutstandingToken.objects.filter(user=request.user)
                 if not tokens.exists():
-                    return Response({"status": "error", "detail": "No tokens found for user."}, status=status.HTTP_400_BAD_REQUEST)
-            
+                    return Response(
+                        {"status": "error", "detail": "No tokens found for user."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
                 for token in tokens:
                     BlacklistedToken.objects.get_or_create(token=token)
-                return Response({"status": "OK, all tokens blacklisted"}, status=status.HTTP_200_OK)
+                return Response(
+                    {"status": "OK, all tokens blacklisted"}, status=status.HTTP_200_OK
+                )
 
             refresh_token = request.data.get("refresh_token", None)
             print(refresh_token)
             print(request.data)
             if not refresh_token:
-                return Response({"status": "error", "detail": "refresh_token is required."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"status": "error", "detail": "refresh_token is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             try:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             except Exception as e:
-                return Response({"status": "error", "detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"status": "error", "detail": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-            return Response({"status": "OK, token blacklisted"}, status=status.HTTP_200_OK)
+            return Response(
+                {"status": "OK, token blacklisted"}, status=status.HTTP_200_OK
+            )
         except Exception:
             return Response({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
 

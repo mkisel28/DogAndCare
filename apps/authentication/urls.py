@@ -8,7 +8,6 @@ from apps.api.v1.authentication.views.views import (
 from dj_rest_auth.app_settings import api_settings
 
 
-
 urlpatterns = [
     path("", EmailAuthRequestView.as_view(), name="auth"),
     path(
