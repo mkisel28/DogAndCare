@@ -42,6 +42,7 @@ from drf_spectacular.utils import (
     OpenApiResponse,
     OpenApiParameter,
 )
+from rest_framework.decorators import action
 
 from apps.authentication.tasks import send_verification_email
 
@@ -144,6 +145,7 @@ from rest_framework.generics import CreateAPIView
 from allauth.account.models import EmailAddress
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from rest_framework import mixins, viewsets
 
 
 @extend_schema(
@@ -191,7 +193,7 @@ from django.utils.html import strip_tags
         ),
     },
 )
-class EmailAuthRequestView(CreateAPIView):
+class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
     Запрос на регистрацию или авторизацию пользователя через email.
 
@@ -215,7 +217,8 @@ class EmailAuthRequestView(CreateAPIView):
     serializer_class = CustomRegisterSerializer
     permission_classes = [AllowAny]
 
-    def post(self, request, *args, **kwargs):
+    @extend_schema(tags=["Authentication"], methods=["post"])
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         try:
             email = request.data["email"]
@@ -242,6 +245,79 @@ class EmailAuthRequestView(CreateAPIView):
             status_code = status.HTTP_201_CREATED
             data = {"detail": "User registered and verification code sent"}
 
+        self._send_verification_code(user, request)
+        return Response(data, status=status_code)
+
+    @extend_schema(
+        tags=["Authentication"],
+        methods=["post"],
+        summary="Повторная отправка кода подтверждения на email",
+        description="Отправляет новый код подтверждения на указанный email.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=dict,
+                description="Код подтверждения отправлен на email",
+                examples=[
+                    OpenApiExample(
+                        name="Код отправлен",
+                        summary="Код подтверждения отправлен на email",
+                        value={"detail": "Verification code sent to email"},
+                    )
+                ],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=dict,
+                description="Email не указан",
+                examples=[
+                    OpenApiExample(
+                        name="Email не указан",
+                        summary="Email не указан в запросе",
+                        value={"email": ["This field is required."]},
+                    ),
+                    OpenApiExample(
+                        name="Email не найден",
+                        summary="Email не найден",
+                        value={"email": ["Email not found."]},
+                    ),
+                ],
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=dict,
+                description="Email не найден",
+                examples=[
+                    OpenApiExample(
+                        name="Email не найден",
+                        summary="Email не найден",
+                        value={"email": ["Email not found."]},
+                    ),
+                ],
+            ),
+        },
+    )
+    @action(detail=False, methods=["post"])
+    def resend_code(self, request, *args, **kwargs):
+        email = request.data.get("email", None)
+        if not email:
+            return Response(
+                {"email": ["This field is required."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            email_address = EmailAddress.objects.get(email=email)
+            user = email_address.user
+        except EmailAddress.DoesNotExist:
+            return Response(
+                {"email": ["Email not found."]},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        self._send_verification_code(user, request)
+        return Response(
+            {"detail": "Verification code sent to email"}, status=status.HTTP_200_OK
+        )
+
+    def _send_verification_code(self, user, request):
+        """Helper method to generate code and send email."""
         _, code = EmailVerificationCode.create_code(user)
         context = {
             "user": user,
@@ -260,8 +336,6 @@ class EmailAuthRequestView(CreateAPIView):
             recipient_list=[user.email],
             html_message=html_message,
         )
-
-        return Response(data, status=status_code)
 
 
 @extend_schema(

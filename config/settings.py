@@ -312,16 +312,14 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 
 # Настройка отказоустойчивости (retry для задач)
-CELERY_RETRY_DELAY = 60  
-CELERY_MAX_RETRIES = 3  
+CELERY_RETRY_DELAY = 60
+CELERY_MAX_RETRIES = 3
 CELERY_ACKS_LATE = True  # задачи будут отмечены выполненными только после завершения
 
 CELERY_WORKER_MAX_TASKS_PER_CHILD = (
     1000  # Перезапуск воркера после 100 задач (защита от утечек памяти)
 )
-CELERY_WORKER_CONCURRENCY = (
-    4  # Число воркеров
-)
+CELERY_WORKER_CONCURRENCY = 4  # Число воркеров
 
 CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE = "UTC"

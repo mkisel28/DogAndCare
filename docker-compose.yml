@@ -157,3 +157,4 @@ volumes:
   django_static_volume:
   django_media_volume:
   postgres_data:
+
