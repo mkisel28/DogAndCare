@@ -145,7 +145,8 @@ services:
       - web_net
     depends_on:
       - redis
-      - celery
+      - celery1
+      - celery2
     restart: always
 
 networks:
@@ -156,4 +157,3 @@ volumes:
   django_static_volume:
   django_media_volume:
   postgres_data:
-
