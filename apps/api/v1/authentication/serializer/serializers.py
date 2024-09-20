@@ -1,16 +1,7 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.password_validation import validate_password
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import LoginSerializer
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
-from apps.authentication.models import EmailVerificationCode
 import re
-import random
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth.models import User
-from allauth.account.adapter import get_adapter
 
 
 class VerifyEmailCodeSerializer(serializers.Serializer):
@@ -56,18 +47,6 @@ class CustomRegisterSerializer(RegisterSerializer):
 
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
-
-
-class PasswordResetConfirmSerializer(serializers.Serializer):
-    new_password = serializers.CharField(
-        write_only=True, required=True, validators=[validate_password]
-    )
-    new_password2 = serializers.CharField(write_only=True, required=True)
-
-    def validate(self, data):
-        if data["new_password"] != data["new_password2"]:
-            raise serializers.ValidationError("Passwords do not match")
-        return data
 
 
 class CustomLoginSerializer(LoginSerializer):

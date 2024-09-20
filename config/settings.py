@@ -155,13 +155,14 @@ JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "secret")
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
     "SIGNING_KEY": JWT_SECRET_KEY,
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=120),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+    "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
 }
 
 SITE_ID = 1
@@ -176,6 +177,7 @@ REST_AUTH = {
     "USER_DETAILS_SERIALIZER": "apps.api.v1.users.serializer.serializers.UserSerializer",
     "REGISTER_SERIALIZER": "apps.api.v1.authentication.serializer.serializers.CustomRegisterSerializer",
     "LOGIN_SERIALIZER": "apps.api.v1.authentication.serializer.serializers.CustomLoginSerializer",
+    "JWT_TOKEN_CLAIMS_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
     "UNIQUE_EMAIL": True,
     "JWT_AUTH_SAMESITE": "None",
 }
@@ -317,7 +319,7 @@ CELERY_MAX_RETRIES = 3
 CELERY_ACKS_LATE = True  # задачи будут отмечены выполненными только после завершения
 
 CELERY_WORKER_MAX_TASKS_PER_CHILD = (
-    1000  # Перезапуск воркера после 100 задач (защита от утечек памяти)
+    1000  # Перезапуск воркера после 1000 задач (защита от утечек памяти)
 )
 CELERY_WORKER_CONCURRENCY = 4  # Число воркеров
 

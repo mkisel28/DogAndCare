@@ -15,12 +15,12 @@ class EmailVerificationCode(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"Код подтверждения для {self.user.email}: {self.code}"
+
     def is_expired(self):
         expiration_period = timedelta(minutes=10)
         return timezone.now() > self.created_at + expiration_period
-
-    def __str__(self):
-        return f"Код подтверждения для {self.user.email}: {self.code}"
 
     def mark_as_used(self):
         self.is_used = True

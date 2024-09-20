@@ -1,17 +1,10 @@
-from django.urls import path
-from django.urls.conf import include
+from django.urls import path, include
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
 
-from apps.api.v1.authentication.views.views import (
-    EmailAuthRequestView,
-    CustomRegisterView,
-    CustomVerifyEmailView,
-)
-from dj_rest_auth.registration.views import RegisterView
 
 urlpatterns = [
     path("v1/", include("apps.api.v1.urls")),

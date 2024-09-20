@@ -1,29 +1,33 @@
-from django.conf import settings
-from django.urls import reverse
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
-from rest_framework.exceptions import ValidationError
-from django.core.mail import send_mail as send_email
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+from allauth.account.models import EmailAddress
+from dj_rest_auth.registration.views import VerifyEmailView
+
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiExample,
+    OpenApiResponse,
+)
 
 from rest_framework import status
+from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import (
-    RefreshToken,
+from rest_framework.exceptions import ValidationError
+
+from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import (
     OutstandingToken,
     BlacklistedToken,
-)
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView,
 )
 
 from apps.api.v1.authentication.serializer.serializers import (
     CustomRegisterSerializer,
-    PasswordResetSerializer,
-    PasswordResetConfirmSerializer,
     VerifyEmailCodeSerializer,
 )
 from apps.api.v1.users.serializer.serializers import (
@@ -32,120 +36,8 @@ from apps.api.v1.users.serializer.serializers import (
     UserSerializer,
 )
 
-from dj_rest_auth.registration.views import VerifyEmailView, RegisterView
-
-from apps.authentication.models import EmailVerificationCode
-from allauth.account.models import EmailAddress
-from drf_spectacular.utils import (
-    extend_schema,
-    OpenApiExample,
-    OpenApiResponse,
-    OpenApiParameter,
-)
-from rest_framework.decorators import action
-
 from apps.authentication.tasks import send_verification_email
-
-
-@extend_schema(
-    tags=["Authentication"],
-    summary="Регистрация пользователя",
-    request=CustomRegisterSerializer,
-    responses={
-        status.HTTP_201_CREATED: OpenApiResponse(
-            description="Пользователь успешно зарегистрирован. На указанный email отправлен код подтверждения.",
-            response={"user_id": 1, "detail": "Verification e-mail sent."},
-            examples=[
-                OpenApiExample(
-                    name="Пример успешного ответа",
-                    summary="Пользователь успешно зарегистрирован",
-                    value={
-                        "user_id": 1,
-                        "detail": "Verification e-mail sent.",
-                    },
-                ),
-            ],
-        ),
-        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-            description="Ошибки валидации при регистрации.",
-            response=dict,
-            examples=[
-                OpenApiExample(
-                    name="Неверный формат email",
-                    summary="Неверный формат email",
-                    value={
-                        "email": ["Enter a valid email address."],
-                    },
-                ),
-                OpenApiExample(
-                    name="Пароль слишком короткий",
-                    summary="Пароль слишком короткий",
-                    value={
-                        "password1": [
-                            "This password is too short. It must contain at least 8 characters."
-                        ],
-                    },
-                ),
-                OpenApiExample(
-                    name="Пароли не совпадают",
-                    summary="Пароли не совпадают",
-                    value={
-                        "non_field_errors": ["The two password fields didn't match."],
-                    },
-                ),
-                OpenApiExample(
-                    name="Пользователь с таким email уже существует",
-                    summary="Пользователь с таким email уже существует",
-                    value={
-                        "email": [
-                            "A user is already registered with this e-mail address."
-                        ]
-                    },
-                ),
-            ],
-        ),
-    },
-)
-class CustomRegisterView(RegisterView):
-    """
-    Регистрация нового пользователя.
-    Требуется предоставить `email`, `password1` и `password2`.
-    Поля `first_name` и `last_name` являются необязательными.
-
-    - email: обязательное поле. Только английские буквы и цифры.
-    - password1: обязательное поле для пароля, минимум 8 символов
-
-    **После успешной регистрации пользователю отправляется письмо с подтверждением.**
-
-    **Важно:** В ответе возвращается `user_id`, который необходимо использовать для подтверждения электронной почты.
-    """
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        data = self.get_response_data(user)
-
-        if data:
-            user_id = user.id
-            data["user_id"] = user_id
-            response = Response(
-                data,
-                status=status.HTTP_201_CREATED,
-                headers=headers,
-            )
-        else:
-            response = Response(status=status.HTTP_204_NO_CONTENT, headers=headers)
-
-        return response
-
-
-from rest_framework.generics import CreateAPIView
-from allauth.account.models import EmailAddress
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from rest_framework import mixins, viewsets
+from apps.authentication.models import EmailVerificationCode
 
 
 @extend_schema(
@@ -473,68 +365,6 @@ class CustomVerifyEmailView(VerifyEmailView):
         }
 
 
-@extend_schema(tags=["User Management"])
-class PasswordResetView(APIView):
-    serializer_class = PasswordResetSerializer
-    permission_classes = [AllowAny]
-
-    @extend_schema(summary="Сброс пароля")
-    def post(self, request, *args, **kwargs):
-        serializer = PasswordResetSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data["email"]
-            try:
-                user = User.objects.get(email=email)
-                token = default_token_generator.make_token(user)
-                reset_url = request.build_absolute_uri(
-                    reverse("password-reset-confirm", args=[user.pk, token])
-                )
-                send_email(
-                    "Password Reset",
-                    f"Click the link to reset your password: {reset_url}",
-                    settings.DEFAULT_FROM_EMAIL,
-                    [email],
-                )
-                return Response(
-                    {"message": "Password reset link sent"}, status=status.HTTP_200_OK
-                )
-            except User.DoesNotExist:
-                return Response(
-                    {"error": "User with this email does not exist"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@extend_schema(tags=["User Management"])
-class PasswordResetConfirmView(APIView):
-    serializer_class = PasswordResetConfirmSerializer
-    permission_classes = [AllowAny]
-
-    @extend_schema(summary="Подтверждение сброса пароля")
-    def post(self, request, user_id, token, *args, **kwargs):
-        serializer = PasswordResetConfirmSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                user = User.objects.get(pk=user_id)
-                if default_token_generator.check_token(user, token):
-                    user.set_password(serializer.validated_data["new_password"])
-                    user.save()
-                    return Response(
-                        {"message": "Password reset successfully"},
-                        status=status.HTTP_200_OK,
-                    )
-                else:
-                    return Response(
-                        {"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
-                    )
-            except User.DoesNotExist:
-                return Response(
-                    {"error": "Invalid user"}, status=status.HTTP_400_BAD_REQUEST
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @extend_schema(
     tags=["Authentication"],
     request=LogoutSerializer,
@@ -594,7 +424,7 @@ class PasswordResetConfirmView(APIView):
             ],
         ),
     },
-)
+)  # +++++++++++++++++++++
 class APILogoutView(APIView):
     """
     API для выхода пользователя
@@ -663,8 +493,6 @@ class APILogoutView(APIView):
                 )
 
             refresh_token = request.data.get("refresh_token", None)
-            print(refresh_token)
-            print(request.data)
             if not refresh_token:
                 return Response(
                     {"status": "error", "detail": "refresh_token is required."},
@@ -687,20 +515,28 @@ class APILogoutView(APIView):
             return Response({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(tags=["Authentication"], summary="Обновление токена")
-class CustomTokenRefreshView(TokenRefreshView):
-    """ 
-    Принимает refresh токен и возвращает новый access токен, \
-        если refresh токен действителен.
+@extend_schema(tags=["Authentication"], summary="Проверка валидности access токена")
+class CustomTokenVerifyView(TokenVerifyView):
+    """
+    Эндпоинт для проверки валидности access токена.
+
+    Returns:
+    - 200 OK: Если токен действителен.
+    - 401 Unauthorized: Если токен недействителен.
     """
 
     pass
 
 
-@extend_schema(tags=["Authentication"], summary="Проверка токена")
-class CustomTokenVerifyView(TokenVerifyView):
-    """ 
-    Принимает access токен и возвращает пустой ответ, \
-        если токен действителен."""
+@extend_schema(tags=["Authentication"], summary="Обновление access и refresh токенов")
+class CustomTokenRefreshView(TokenRefreshView):
+    """
+    Эндпоинт для обновления access токена и refresh токена.
+    После обновления, старый refresh токен деактивируется.
+
+    Returns:
+    - 200 OK: Если токен успешно обновлен.
+    - 401 Unauthorized: Если токен недействителен.
+    """
 
     pass

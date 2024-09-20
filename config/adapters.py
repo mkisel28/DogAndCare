@@ -1,8 +1,4 @@
 from allauth.account.adapter import DefaultAccountAdapter
-from django.conf import settings
-from django.core.mail import send_mail
-import random
-
 from apps.authentication.models import EmailVerificationCode
 
 
@@ -12,9 +8,7 @@ class AccountAdapter(DefaultAccountAdapter):
     ):
         user = user or emailconfirmation.email_address.user
 
-        code = EmailVerificationCode.generate_code()
-
-        EmailVerificationCode.objects.create(user=user, code=code)
+        _, code = EmailVerificationCode.create_code(user=user)
 
         context = {
             "user": user,
