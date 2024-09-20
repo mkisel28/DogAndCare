@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    avatar = serializers.ImageField(
+    avatar_url = serializers.ImageField(
         source="profile.avatar", read_only=False, required=False
     )
 
@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "date_of_birth",
             "bio",
-            "avatar",
+            "avatar_url",
         ]
 
     def update(self, instance, validated_data):

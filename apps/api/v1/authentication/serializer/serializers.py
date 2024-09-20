@@ -4,6 +4,14 @@ from dj_rest_auth.serializers import LoginSerializer
 import re
 
 
+class CodeSerializer(serializers.Serializer):
+    code = serializers.CharField(
+        max_length=6,
+        required=True,
+        help_text="A 6-digit confirmation code sent to the user's email address.",
+    )
+
+
 class VerifyEmailCodeSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
