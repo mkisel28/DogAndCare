@@ -515,7 +515,9 @@ class APILogoutView(APIView):
             return Response({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(tags=["Authentication"], summary="Проверка валидности access токена")
+@extend_schema(
+    tags=["Authentication Token"], summary="Проверка валидности access токена"
+)
 class CustomTokenVerifyView(TokenVerifyView):
     """
     Эндпоинт для проверки валидности access токена.
@@ -528,7 +530,9 @@ class CustomTokenVerifyView(TokenVerifyView):
     pass
 
 
-@extend_schema(tags=["Authentication"], summary="Обновление access и refresh токенов")
+@extend_schema(
+    tags=["Authentication Token"], summary="Обновление access и refresh токенов"
+)
 class CustomTokenRefreshView(TokenRefreshView):
     """
     Эндпоинт для обновления access токена и refresh токена.
