@@ -79,7 +79,7 @@ class Pet(models.Model):
         User, on_delete=models.CASCADE, help_text="The owner of the pet"
     )
     type = models.CharField(
-        max_length=20, choices=PET_TYPES, help_text="The type of the pet"
+        max_length=20, choices=PET_TYPES, default="Dog", help_text="The type of the pet"
     )
     avatar = models.ImageField(
         upload_to="pets", null=True, blank=True, help_text="The avatar of the pet"
@@ -94,45 +94,20 @@ class Pet(models.Model):
         on_delete=models.SET_NULL,
         help_text="The breed of the pet",
     )
-    birth_year = models.IntegerField(
-        null=True, blank=True, help_text="The birth year of the pet"
-    )
-    birth_month = models.IntegerField(  # type: ignore
-        null=True,
-        blank=True,
-        choices=[(i, i) for i in range(1, 13)],  # type: ignore
-        help_text="The birth month of the pet",
-    )
-    birth_day = models.IntegerField(  # type: ignore
-        null=True,
-        blank=True,
-        choices=[(i, i) for i in range(1, 32)],  # type: ignore
-        help_text="The birth day of the pet",
+    birth_date = models.DateField(
+        null=True, blank=True, help_text="The birth date of the pet"
     )
     sex = models.CharField(null=True, blank=True, max_length=6, choices=GENDERS)
     is_neutered = models.BooleanField(
-        default=False, help_text="Whether the pet is neutered"
+        null=True, blank=True, help_text="Whether the pet is neutered"
     )
     weight = models.FloatField(null=True, blank=True, help_text="The weight of the pet")
-    temperament = models.ManyToManyField(
-        "Temperament", blank=True, help_text="The temperament of the pet"
-    )
     created_at = models.DateTimeField(
         auto_now_add=True, help_text="The date and time the pet was created"
     )
     updated_at = models.DateTimeField(
         auto_now=True, help_text="The date and time the pet was last updated"
     )
-
-    def get_date_of_birth(self):
-        if self.birth_year and self.birth_month and self.birth_day:
-            return f"{self.birth_year}-{self.birth_month}-{self.birth_day}"
-        elif self.birth_year and self.birth_month:
-            return f"{self.birth_year}-{self.birth_month}"
-        elif self.birth_year:
-            return f"{self.birth_year}"
-        else:
-            return None
 
     class Meta:
         verbose_name = "Pet"

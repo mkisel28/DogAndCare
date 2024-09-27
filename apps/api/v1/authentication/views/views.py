@@ -28,6 +28,7 @@ from rest_framework_simplejwt.token_blacklist.models import (
 
 from apps.api.v1.authentication.serializer.serializers import (
     CustomRegisterSerializer,
+    GoogleLoginSerializer,
     VerifyEmailCodeSerializer,
 )
 from apps.api.v1.users.serializer.serializers import (
@@ -424,7 +425,7 @@ class CustomVerifyEmailView(VerifyEmailView):
             ],
         ),
     },
-)  # +++++++++++++++++++++
+)
 class APILogoutView(APIView):
     """
     API для выхода пользователя
@@ -544,3 +545,19 @@ class CustomTokenRefreshView(TokenRefreshView):
     """
 
     pass
+
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from dj_rest_auth.registration.views import SocialLoginView
+
+
+class GoogleLogin(
+    SocialLoginView
+):  # if you want to use Authorization Code Grant, use this
+    adapter_class = GoogleOAuth2Adapter
+    callback_url = "http://127.0.0.1:8000/api/accounts/google/login/callback/"
+    client_class = OAuth2Client

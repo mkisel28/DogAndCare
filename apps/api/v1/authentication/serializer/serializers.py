@@ -60,3 +60,21 @@ class PasswordResetSerializer(serializers.Serializer):
 class CustomLoginSerializer(LoginSerializer):
     username = None
     email = serializers.EmailField(required=True)
+
+
+# apps/authentication/serializers.py
+
+from dj_rest_auth.registration.serializers import SocialLoginSerializer
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from rest_framework import serializers
+
+
+class GoogleLoginSerializer(SocialLoginSerializer):
+    access_token = serializers.CharField()
+
+    class Meta:
+        fields = ("access_token",)
+
+    def validate(self, attrs):
+        self.adapter_class = GoogleOAuth2Adapter
+        return super().validate(attrs)

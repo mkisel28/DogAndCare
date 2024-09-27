@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     "drf_spectacular",
     "corsheaders",
     # -- REST --
@@ -48,7 +49,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "middleware.jwt.JWTUserMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
+    "allauth.account.middleware.AccountMiddleware",  # allauth account middleware
 ]
 
 
@@ -153,7 +154,7 @@ REST_FRAMEWORK = {
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "secret")
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=300),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
@@ -173,7 +174,7 @@ REST_AUTH = {
     "JWT_AUTH_SECURE": True,
     "REST_SESSION_LOGIN": False,
     "LOGOUT_ON_PASSWORD_CHANGE": False,
-    "JWT_AUTH_HTTPONLY": True,
+    "JWT_AUTH_HTTPONLY": False,
     "USER_DETAILS_SERIALIZER": "apps.api.v1.users.serializer.serializers.UserSerializer",
     "REGISTER_SERIALIZER": "apps.api.v1.authentication.serializer.serializers.CustomRegisterSerializer",
     "LOGIN_SERIALIZER": "apps.api.v1.authentication.serializer.serializers.CustomLoginSerializer",
@@ -190,8 +191,32 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
-AUTHENTICATION_BACKENDS = ("allauth.account.auth_backends.AuthenticationBackend",)
+AUTHENTICATION_BACKENDS = (
+    "allauth.account.auth_backends.AuthenticationBackend",
+    "django.contrib.auth.backends.ModelBackend",
+    "rest_framework_simplejwt.authentication.JWTAuthentication",
+)
 ACCOUNT_ADAPTER = "config.adapters.AccountAdapter"
+LOGIN_REDIRECT_URL = "/"
+SOCIALACCOUNT_ENABLED = True
+SOCIALACCOUNT_STORE_TOKENS = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+        "SCOPE": ["email", "profile"],
+        "OAUTH_PKCE_ENABLED": True,
+    }
+}
 
 LOG_DIR = BASE_DIR / "logs"
 access_log_dir = LOG_DIR / "access"
