@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,
+    OpenApiExample,
 )
 
 
@@ -42,7 +43,30 @@ class PetViewSet(viewsets.ModelViewSet):
         responses={
             201: PetCreateSerializer,
             400: OpenApiResponse(
-                description="Некорректные данные или ошибки валидации"
+                description="Некорректный запрос",
+                response=PetCreateSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="Дата рождения в будущем",
+                        value={
+                            "birth_date": ["The birth date cannot be in the future."],
+                        },
+                    ),
+                    OpenApiExample(
+                        name="Питомец не может быть старше 50 лет",
+                        value={
+                            "birth_date": ["The pet can not be older than 50 years."],
+                        },
+                    ),
+                    OpenApiExample(
+                        name="Некорректный формат файла",
+                        value={
+                            "avatar": [
+                                "The submitted data was not a file. Check the encoding type on the form."
+                            ],
+                        },
+                    ),
+                ],
             ),
             401: OpenApiResponse(description="Пользователь не аутентифицирован"),
         },
