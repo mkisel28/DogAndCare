@@ -4,24 +4,24 @@ from datetime import date, timedelta
 from apps.pets.models import Breed, Pet, Temperament
 
 
-class PetsSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source="owner.username")
-    breed = serializers.CharField(source="breed.name", required=False)
+# class PetsSerializer(serializers.ModelSerializer):
+#     owner = serializers.ReadOnlyField(source="owner.username")
+#     breed = serializers.CharField(source="breed.name", required=False)
 
-    class Meta:
-        model = Pet
-        fields = [
-            "id",
-            "name",
-            "owner",
-            "breed",
-            "birth_date",
-            "sex",
-            "is_neutered",
-            "weight",
-            "created_at",
-            "updated_at",
-        ]
+#     class Meta:
+#         model = Pet
+#         fields = [
+#             "id",
+#             "name",
+#             "owner",
+#             "breed",
+#             "birth_date",
+#             "sex",
+#             "is_neutered",
+#             "weight",
+#             "created_at",
+#             "updated_at",
+#         ]
 
 
 class CreatePetSerializer(serializers.ModelSerializer):
@@ -42,15 +42,44 @@ class TemperamentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PetCreateSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source="owner.username")
-    breed = serializers.PrimaryKeyRelatedField(
-        queryset=Breed.objects.all(), required=False
+# class PetCreateSerializer(serializers.ModelSerializer):
+#     owner = serializers.ReadOnlyField(source="owner.username")
+#     breed = serializers.PrimaryKeyRelatedField(
+#         queryset=Breed.objects.all(), required=False
+#     )
+
+#     class Meta:
+#         model = Pet
+#         fields = "__all__"
+
+
+#     def create(self, validated_data):
+#         pet = Pet.objects.create(owner=self.context["request"].user, **validated_data)
+#         return pet
+
+
+class PetSerializer(serializers.ModelSerializer):
+    breed = serializers.CharField(source="breed.name", required=False, read_only=True)
+    breed_id = serializers.PrimaryKeyRelatedField(
+        queryset=Breed.objects.all(), source="breed", write_only=True, required=False
     )
 
     class Meta:
         model = Pet
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "avatar",
+            "breed",
+            "breed_id",
+            "birth_date",
+            "sex",
+            "is_neutered",
+            "weight",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
 
     def validate_birth_date(self, value):
         today = date.today()
@@ -70,5 +99,6 @@ class PetCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        pet = Pet.objects.create(owner=self.context["request"].user, **validated_data)
-        return pet
+        user = self.context["request"].user
+        validated_data["owner"] = user
+        return super().create(validated_data)

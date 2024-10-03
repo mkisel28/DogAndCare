@@ -3,6 +3,26 @@ from utils.logging_filters import UserFilter
 import os
 from datetime import timedelta
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+
+sentry_sdk.init(
+    dsn="https://0328d2ada8d386146cb1eacb05d22008@o4508060683206656.ingest.us.sentry.io/4508060685893632",
+    integrations=[
+        DjangoIntegration(),
+        CeleryIntegration(),  # Для интеграции с Celery (если используется)
+        LoggingIntegration(level=None, event_level=None),  # Логгирование ошибок
+    ],
+    traces_sample_rate=1.0,  # Включение трассировки (1.0 - 100% запросов)
+    profiles_sample_rate=1.0,
+    send_default_pii=True,  # Для отправки данных пользователей (опционально)
+    environment="production",  # Указание, что это продакшн
+    attach_stacktrace=True,  # Добавление стектрейсов к событиям
+    max_breadcrumbs=50,  # Настройка количества breadcrumbs
+    max_request_body_size="always",  # Захват данных запроса для улучшенной диагностики
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,6 +57,7 @@ INSTALLED_APPS = [
     "apps.api",
     "apps.pets",
     "apps.reminders",
+    "apps.health",
 ]
 
 
@@ -155,7 +176,7 @@ REST_FRAMEWORK = {
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "secret")
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=100),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=120),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
@@ -291,6 +312,10 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "simple",
         },
+        "sentry": {
+            "level": "ERROR",  # только ошибки
+            "class": "sentry_sdk.integrations.logging.EventHandler",
+        },
     },
     "loggers": {
         "": {
@@ -298,7 +323,7 @@ LOGGING = {
             "level": "INFO",
         },
         "django": {
-            "handlers": ["file", "console", "error_file", "access_file"],
+            "handlers": ["sentry", "file", "console", "error_file", "access_file"],
             "level": "INFO",
             "propagate": True,
         },

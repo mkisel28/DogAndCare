@@ -187,7 +187,7 @@ class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
             ),
         },
     )
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["post"], url_path="resend-code")
     def resend_code(self, request, *args, **kwargs):
         email = request.data.get("email", None)
         if not email:

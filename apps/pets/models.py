@@ -76,7 +76,10 @@ class Temperament(models.Model):
 
 class Pet(models.Model):
     owner = models.ForeignKey(
-        User, on_delete=models.CASCADE, help_text="The owner of the pet"
+        User,
+        on_delete=models.CASCADE,
+        related_name="pets",
+        help_text="The owner of the pet",
     )
     type = models.CharField(
         max_length=20, choices=PET_TYPES, default="Dog", help_text="The type of the pet"

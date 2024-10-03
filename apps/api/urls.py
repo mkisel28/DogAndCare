@@ -14,6 +14,7 @@ urlpatterns = [
     path("user/", include("apps.api.v1.users.urls")),
     path("pets/", include("apps.api.v1.pets.urls")),
     path("reminders/", include("apps.api.v1.reminders.urls")),
+    path("health/", include("apps.api.v1.health.urls")),
     path("accounts/", include("allauth.urls")),
     path("auth/social/google/", GoogleLogin.as_view(), name="google_login"),
     path("schema-yaml/", SpectacularAPIView.as_view(), name="schema"),
