@@ -66,7 +66,10 @@ class DailyLogSerializer(serializers.ModelSerializer):
         pet = self.context.get("pet_id")
         if not pet:
             raise serializers.ValidationError("Питомец не указан.")
-        log = DailyLog.get_today_log(pet)
+
+        user_timezone = self.context.get("timezone", None)
+        log = DailyLog.get_today_log(pet, user_timezone=user_timezone)
+
         if "symptoms_id" in validated_data:
             log.symptoms.set(validated_data["symptoms_id"])
         log.save()

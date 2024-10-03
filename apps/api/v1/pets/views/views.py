@@ -20,6 +20,7 @@ from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,
     OpenApiExample,
+    OpenApiParameter,
 )
 from rest_framework.decorators import action
 
@@ -91,6 +92,15 @@ class PetViewSet(viewsets.ModelViewSet):
         summary="Управление симптомами питомца",
         request=DailyLogSerializer,
         responses=DailyLogSerializer,
+        parameters=[
+            OpenApiParameter(
+                name="timezone",
+                description="Часовой пояс пользователя (например, Europe/Minsk)",
+                required=False,
+                type=str,
+                location=OpenApiParameter.QUERY,
+            ),
+        ],
     )
     @action(
         detail=True,
@@ -101,30 +111,38 @@ class PetViewSet(viewsets.ModelViewSet):
     def manage_symptoms(self, request, pk=None):
         self.check_permissions(request)
         self.check_object_permissions(request, self.get_object())
-        pet = Pet.objects.get(pk=pk)
+
+        user_timezone = request.GET.get("timezone", None)
 
         if request.method == "GET":
-            log = DailyLog.get_today_log(pet=pet)
+            log = self._get_log(pk, user_timezone)
             serializer = DailyLogSerializer(log)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.method == "POST":
-            create = DailyLogSerializer(data=request.data, context={"pet_id": pk})
+            create = DailyLogSerializer(
+                data=request.data, context={"pet_id": pk, "timezone": user_timezone}
+            )
             create.is_valid(raise_exception=True)
             create.save()
             return Response(create.data, status=status.HTTP_201_CREATED)
 
         elif request.method == "DELETE":
-            log = DailyLog.get_today_log(pet=pet)
+            log = self._get_log(pk, user_timezone)
             log.symptoms.clear()
             serializer = DailyLogSerializer(log)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.method == "PATCH":
-            log = DailyLog.get_today_log(pet=pet)
+            log = self._get_log(pk, user_timezone)
             log.symptoms.set(request.data["symptoms_id"])
             serializer = DailyLogSerializer(log)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def _get_log(self, pk, user_timezone=None):
+        pet = Pet.objects.get(pk=pk)
+        log = DailyLog.get_today_log(pet=pet, user_timezone=user_timezone)
+        return log
 
 
 @extend_schema(tags=["Reference Data"])

@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from apps.pets.models import Pet
+import pytz
 
 
 class SymptomCategory(models.Model):
@@ -81,16 +82,22 @@ class DailyLog(models.Model):
         self.symptoms.remove(*symptoms)
 
     @classmethod
-    def get_today_log(cls, pet):
-        """Получить или создать лог для сегодня"""
-        today = timezone.now().date()
+    def get_today_log(cls, pet, user_timezone=None):
+        """Получить или создать лог для сегодня с учетом часового пояса пользователя"""
+        if user_timezone:
+            try:
+                user_tz = pytz.timezone(user_timezone)
+                today = timezone.now().astimezone(user_tz).date()
+            except pytz.UnknownTimeZoneError:
+                raise ValidationError("Неправильный часовой пояс.")
+        else:
+            today = timezone.now().date()
+
         if isinstance(pet, int):
             pet = Pet.objects.filter(id=pet).first()
-            print(pet)
-            print(pet)
-            print(pet)
             if not pet:
                 raise ValidationError("Питомец не найден.")
+
         log, created = cls.objects.get_or_create(pet=pet, date=today)
         return log
 
