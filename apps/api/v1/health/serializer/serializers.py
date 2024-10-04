@@ -64,6 +64,7 @@ class DailyLogSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         pet = self.context.get("pet_id")
+
         if not pet:
             raise serializers.ValidationError("Питомец не указан.")
 

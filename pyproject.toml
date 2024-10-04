@@ -27,6 +27,8 @@ celery = "^5.4.0"
 redis = "^5.0.8"
 flower = "^2.0.1"
 sentry-sdk = {extras = ["django"], version = "^2.15.0"}
+django-debug-toolbar = "^4.4.6"
+drf-nested-routers = "^0.94.1"
 
 
 [build-system]

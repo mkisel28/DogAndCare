@@ -10,6 +10,9 @@ class Reminder(models.Model):
     description = models.TextField(
         null=True, blank=True, help_text="Description of the reminder"
     )
+    reminder_type = models.CharField(
+        max_length=255, help_text="Type of reminder", blank=True, null=True
+    )
     created_at = models.DateTimeField(
         auto_now_add=True, help_text="When the reminder was created"
     )

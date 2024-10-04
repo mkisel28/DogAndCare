@@ -4,11 +4,11 @@ from .views import views
 
 
 router = DefaultRouter()
+
 router.register(
     r"symptom-categories", views.SymptomCategoryViewSet, basename="symptomcategory"
 )
 router.register(r"symptoms", views.SymptomViewSet, basename="symptom")
-# router.register(r'daily-logs', views.DailyLogViewSet, basename='dailylog')
 
 
 urlpatterns = [

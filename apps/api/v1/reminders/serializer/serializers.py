@@ -11,7 +11,7 @@ class PetDetailSerializer(serializers.ModelSerializer):
 
 
 class ReminderSerializer(serializers.ModelSerializer):
-    pets = serializers.PrimaryKeyRelatedField(
+    pet_ids = serializers.PrimaryKeyRelatedField(
         queryset=Pet.objects.all(),
         many=True,
         help_text="List of pets related to this reminder",
@@ -31,10 +31,11 @@ class ReminderSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "reminder_type",
             "reminder_time",
             "is_recurring",
             "frequency_in_minutes",
-            "pets",
+            "pet_ids",
             "pets_details",
         ]
 

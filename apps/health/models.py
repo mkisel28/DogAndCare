@@ -93,7 +93,7 @@ class DailyLog(models.Model):
         else:
             today = timezone.now().date()
 
-        if isinstance(pet, int):
+        if isinstance(pet, (int, str)):
             pet = Pet.objects.filter(id=pet).first()
             if not pet:
                 raise ValidationError("Питомец не найден.")

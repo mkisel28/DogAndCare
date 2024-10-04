@@ -40,7 +40,11 @@ class SymptomCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 @extend_schema(tags=["Reference Data"], summary="Получение списка доступных симптомов")
 class SymptomViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Symptom.objects.select_related("category").all()
+    queryset = (
+        Symptom.objects.select_related("category")
+        .prefetch_related("category__symptoms")
+        .all()
+    )
     serializer_class = SymptomSerializer
     pagination_class = None
     authentication_classes = []

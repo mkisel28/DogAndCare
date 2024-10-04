@@ -380,6 +380,29 @@ CELERY_TIMEZONE = "UTC"
 
 try:
     from .local_settings import *
+    if DEBUG:
+        INTERNAL_IPS = [
+            "127.0.0.1",
+        ]
+
+        INSTALLED_APPS += [
+            "debug_toolbar",
+        ]
+
+        MIDDLEWARE += [
+            "debug_toolbar.middleware.DebugToolbarMiddleware",
+        ]
+
+        import socket
+
+        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        INTERNAL_IPS += [ip[: ip.rfind(".")] + ".1" for ip in ips]
+
+        DEBUG_TOOLBAR_CONFIG = {
+            "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
+        }
+
+
 except ImportError:
     print("No local settings found")
     from .prod_settings import *
