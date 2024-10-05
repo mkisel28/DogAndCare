@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "apps.pets",
     "apps.reminders",
     "apps.health",
+    "apps.walks",
 ]
 
 
@@ -380,6 +381,7 @@ CELERY_TIMEZONE = "UTC"
 
 try:
     from .local_settings import *
+
     if DEBUG:
         INTERNAL_IPS = [
             "127.0.0.1",

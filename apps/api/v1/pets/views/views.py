@@ -155,7 +155,7 @@ class PetViewSet(viewsets.ModelViewSet):
 
 @extend_schema(
     summary="Управление симптомами питомца",
-    tags=["User Pets Management"],
+    tags=["Health"],
     request=DailyLogSerializer,
     responses=DailyLogSerializer,
     parameters=[
