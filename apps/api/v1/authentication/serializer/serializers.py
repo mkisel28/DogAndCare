@@ -71,6 +71,7 @@ from rest_framework import serializers
 
 class GoogleLoginSerializer(SocialLoginSerializer):
     access_token = serializers.CharField()
+    code = None
 
     class Meta:
         fields = ("access_token",)

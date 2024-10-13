@@ -2,6 +2,8 @@ from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.utils import timezone
+import datetime
 
 from apps.api.v1.walks.serializer.serializers import WalkSerializer, WalkStatsSerializer
 from apps.walks.models import Walk, WalkStats
@@ -12,8 +14,6 @@ from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
 )
-from django.utils import timezone
-import datetime
 
 
 @extend_schema(
@@ -38,17 +38,13 @@ class WalkViewSet(
     - `list` endpoint возвращает все прогулки, связанные с данным питомцем и пользователем.
     """
 
-    queryset = Walk.objects.all()
+    queryset = Walk.objects.select_related("pet", "owner").all()
     serializer_class = WalkSerializer
     permission_classes = [IsAuthenticated]
 
-
     def get_queryset(self):
         pet_pk = self.kwargs.get("pet_pk")
-        return Walk.objects.select_related("pet", "owner").filter(
-            owner=self.request.user,
-            pet__id=pet_pk,
-        )
+        return self.queryset.filter(owner=self.request.user, pet__id=pet_pk)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user, pet_id=self.kwargs.get("pet_pk"))
@@ -59,13 +55,13 @@ class WalkViewSet(
     summary="Статистика прогулок для питомцев",
 )
 class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    queryset = WalkStats.objects.all()
+    queryset = WalkStats.objects.select_related("pet", "pet__owner").all()
     serializer_class = WalkStatsSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         pet_pk = self.kwargs.get("pet_pk")
-        return WalkStats.objects.filter(pet__owner=self.request.user, pet__id=pet_pk)
+        return self.queryset.filter(pet__owner=self.request.user, pet__id=pet_pk)
 
     @extend_schema(
         summary="Ежедневная статистика прогулок",
@@ -116,13 +112,12 @@ class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         Возвращает ежедневную статистику прогулок для конкретного питомца.
         """
         pet_id = kwargs.get("pet_pk")
-        date = request.query_params.get("date", timezone.now().date())
+        date_str = request.query_params.get("date", timezone.now().date())
         try:
-            date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+            date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             return Response(
-                {"date": "Date has wrong format. Use YYYY-MM-DD."},
-                status=400,
+                {"date": "Date has wrong format. Use YYYY-MM-DD."}, status=400
             )
 
         if not pet_id:
@@ -188,14 +183,26 @@ class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         Возвращает недельную статистику прогулок для питомца.
         """
         pet_id = kwargs.get("pet_pk")
-        end_date = request.query_params.get("end_date", timezone.now().date())
-        start_date = end_date - datetime.timedelta(days=7)
+        end_date_str = request.query_params.get("end_date", timezone.now().date())
+        start_date_str = request.query_params.get(
+            "start_date", (timezone.now() - datetime.timedelta(days=6)).date()
+        )
+
+        try:
+            end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+            start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return Response(
+                {"date": "Date has wrong format. Use YYYY-MM-DD."}, status=400
+            )
+
         if end_date < start_date:
             return Response(
                 {"date": "End date cannot be before start date"}, status=400
             )
         if not pet_id:
             return Response({"pet_pk": "This field is required"}, status=400)
+
         stats = WalkStats.objects.filter(
             pet__id=pet_id, date__range=(start_date, end_date)
         )

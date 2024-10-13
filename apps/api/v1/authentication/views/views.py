@@ -1,9 +1,13 @@
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.utils import timezone
 
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.account.models import EmailAddress
 from dj_rest_auth.registration.views import VerifyEmailView
+from dj_rest_auth.registration.views import SocialLoginView
 
 from drf_spectacular.utils import (
     extend_schema,
@@ -19,8 +23,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 
-from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 from rest_framework_simplejwt.token_blacklist.models import (
     OutstandingToken,
     BlacklistedToken,
@@ -547,17 +551,53 @@ class CustomTokenRefreshView(TokenRefreshView):
     pass
 
 
-from rest_framework_simplejwt.tokens import RefreshToken
+@extend_schema(
+    tags=["Authentication"],
+    summary="Авторизация через Google",
+    request=GoogleLoginSerializer,
+    responses={
+        201: AuthUserSerializer,
+        200: AuthUserSerializer,
+        500: {"Internal server error"},
+    },
+)
+class GoogleLogin(SocialLoginView):
+    """
+    Авторизация через Google
+    """
 
-
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from dj_rest_auth.registration.views import SocialLoginView
-
-
-class GoogleLogin(
-    SocialLoginView
-):  # if you want to use Authorization Code Grant, use this
     adapter_class = GoogleOAuth2Adapter
-    callback_url = "http://127.0.0.1:8000/api/accounts/google/login/callback/"
+    # callback_url = "http://127.0.0.1:8000/api/accounts/google/login/callback/"
     client_class = OAuth2Client
+    serializer_class = GoogleLoginSerializer
+
+    # Костыльно определяем пользователь авторизуется
+    # или регистрируется, чтобы вернуть статус 201
+    def get_response(self):
+        response = super().get_response()
+
+        user = self.user
+        if user is None:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        tokens = {
+            "refresh": str(response.data.get("refresh")),
+            "access": str(response.data.get("access")),
+        }
+
+        auth_user_data = AuthUserSerializer({"user": user, "tokens": tokens}).data
+
+        time_now = timezone.now()
+        data_joined = user.date_joined
+        if not data_joined:
+            return Response(
+                {"error": "User registration date not available"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if (time_now - data_joined).total_seconds() < 120:
+            return Response(auth_user_data, status=status.HTTP_201_CREATED)
+
+        return Response(auth_user_data)

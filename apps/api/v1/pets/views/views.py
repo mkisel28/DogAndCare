@@ -1,29 +1,23 @@
-from rest_framework.permissions import IsAuthenticated
-from drf_spectacular.utils import extend_schema
-from rest_framework.decorators import permission_classes
-from apps.api.v1.health.serializer.serializers import DailyLogSerializer
-from apps.api.v1.health.views.views import IsOwner
-from apps.api.v1.pets.serializer.serializers import (
-    BreedSerializer,
-    # PetCreateSerializer,
-    PetSerializer,
-    TemperamentSerializer,
-)
-from apps.health.models import DailyLog
-from apps.pets.models import Breed, Pet, Temperament
-
 from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.decorators import action
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiResponse,
     OpenApiExample,
     OpenApiParameter,
 )
-from rest_framework.decorators import action
-from rest_framework.views import APIView
+
+from apps.api.v1.health.serializer.serializers import DailyLogSerializer
+from apps.api.v1.pets.serializer.serializers import (
+    BreedSerializer,
+    PetSerializer,
+    TemperamentSerializer,
+)
+from apps.health.models import DailyLog
+from apps.pets.models import Breed, Pet, Temperament
+from apps.api.v1.health.views.views import IsOwner
 
 
 @extend_schema(tags=["User Pets Management"])
@@ -205,7 +199,6 @@ class SymptomLogViewSet(
         Очищает все симптомы для указанного питомца.
         """
         user_timezone = request.GET.get("timezone", None)
-
         log = self._get_log(kwargs.get("pet_pk"), user_timezone=user_timezone)
 
         if not log:
@@ -215,11 +208,12 @@ class SymptomLogViewSet(
 
         log.symptoms.clear()
         log.save()
-
         return Response(
             {"detail": "All symptoms removed successfully."}, status=status.HTTP_200_OK
         )
 
+    # TODO: Добавить документацию к методам add_symptom и remove_symptom\
+    # TODO: Использовать Timezone
     @action(detail=False, methods=["patch"], url_path="add", url_name="add_symptom")
     def add_symptom(self, request, *args, **kwargs):
         """
@@ -228,8 +222,8 @@ class SymptomLogViewSet(
 
         """
         symptom_id = request.data.get("symptoms_id", None)
-
         log = self._get_log(kwargs.get("pet_pk"), user_timezone=None)
+
         if not log:
             return Response(
                 {"detail": "DailyLog not found."}, status=status.HTTP_404_NOT_FOUND
