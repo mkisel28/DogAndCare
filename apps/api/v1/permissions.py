@@ -1,17 +1,12 @@
-from rest_framework import permissions
-from rest_framework.permissions import BasePermission
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.response import Response
-from rest_framework import status
 import logging
+
+from rest_framework import permissions
 
 logger = logging.getLogger(__name__)
 
 
 class AdminFullAccessAuthenticatedReadOnly(permissions.BasePermission):
-    """
-    Permissions:
+    """Permissions:
     - All actions are allowed for the administrator.
     - Only read access is allowed for authenticated users.
     - 403 Forbidden for unauthenticated users.
@@ -24,7 +19,8 @@ class AdminFullAccessAuthenticatedReadOnly(permissions.BasePermission):
                 return True
             if request.user and request.user.is_staff:
                 logger.info(
-                    "Доступ предоставлен администратору", extra={"request": request}
+                    "Доступ предоставлен администратору",
+                    extra={"request": request},
                 )
                 return True
 
@@ -47,6 +43,7 @@ class AdminFullAccessAuthenticatedReadOnly(permissions.BasePermission):
             return False
         except Exception as e:
             logger.error(
-                f"Ошибка в проверке разрешений: {str(e)}", extra={"request": request}
+                f"Ошибка в проверке разрешений: {e!s}",
+                extra={"request": request},
             )
             return False

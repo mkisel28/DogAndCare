@@ -1,19 +1,20 @@
-from rest_framework import viewsets, mixins
+import datetime
+
+from django.utils import timezone
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+)
+from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.utils import timezone
-import datetime
 
 from apps.api.v1.walks.serializer.serializers import WalkSerializer, WalkStatsSerializer
 from apps.walks.models import Walk, WalkStats
-
-from drf_spectacular.utils import (
-    extend_schema,
-    OpenApiResponse,
-    OpenApiExample,
-    OpenApiParameter,
-)
+from utils.pagintaion import CustomPageNumberPagination
 
 
 @extend_schema(
@@ -28,8 +29,7 @@ class WalkViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    """
-    WalkViewSet управляет созданием, получением, обновлением, удалением и перечислением экземпляров Walk для конкретного питомца.
+    """WalkViewSet управляет созданием, получением, обновлением, удалением и перечислением экземпляров Walk для конкретного питомца.
 
     - `create` endpoint позволяет аутентифицированным пользователям создавать новую прогулку для конкретного питомца.
     - `retrieve` endpoint позволяет пользователям получать детали конкретной прогулки по ID прогулки.
@@ -41,6 +41,7 @@ class WalkViewSet(
     queryset = Walk.objects.select_related("pet", "owner").all()
     serializer_class = WalkSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
         pet_pk = self.kwargs.get("pet_pk")
@@ -58,6 +59,7 @@ class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = WalkStats.objects.select_related("pet", "pet__owner").all()
     serializer_class = WalkStatsSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
         pet_pk = self.kwargs.get("pet_pk")
@@ -102,8 +104,7 @@ class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     )
     @action(detail=False, methods=["get"], url_path="daily")
     def daily_stats(self, request, *args, **kwargs):
-        """
-        Получить ежедневную статистику для конкретного питомца по ID.
+        """Получить ежедневную статистику для конкретного питомца по ID.
 
         Параметры:
         - `pet_pk` (обязательный): Первичный ключ питомца.
@@ -117,7 +118,8 @@ class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             return Response(
-                {"date": "Date has wrong format. Use YYYY-MM-DD."}, status=400
+                {"date": "Date has wrong format. Use YYYY-MM-DD."},
+                status=400,
             )
 
         if not pet_id:
@@ -126,7 +128,8 @@ class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             stat = WalkStats.objects.get(pet__id=pet_id, date=date)
         except WalkStats.DoesNotExist:
             return Response(
-                {"detail": "Stat for the given date not found."}, status=404
+                {"detail": "Stat for the given date not found."},
+                status=404,
             )
 
         serializer = WalkStatsSerializer(stat)
@@ -172,8 +175,7 @@ class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     )
     @action(detail=False, methods=["get"], url_path="weekly")
     def weekly_stats(self, request, *args, **kwargs):
-        """
-        Получить недельную статистику для конкретного питомца по ID в заданном диапазоне дат.
+        """Получить недельную статистику для конкретного питомца по ID в заданном диапазоне дат.
 
         Параметры:
         - `pet_pk` (обязательный): Первичный ключ питомца.
@@ -185,7 +187,8 @@ class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         pet_id = kwargs.get("pet_pk")
         end_date_str = request.query_params.get("end_date", timezone.now().date())
         start_date_str = request.query_params.get(
-            "start_date", (timezone.now() - datetime.timedelta(days=6)).date()
+            "start_date",
+            (timezone.now() - datetime.timedelta(days=6)).date(),
         )
 
         try:
@@ -193,18 +196,21 @@ class WalkStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
         except ValueError:
             return Response(
-                {"date": "Date has wrong format. Use YYYY-MM-DD."}, status=400
+                {"date": "Date has wrong format. Use YYYY-MM-DD."},
+                status=400,
             )
 
         if end_date < start_date:
             return Response(
-                {"date": "End date cannot be before start date"}, status=400
+                {"date": "End date cannot be before start date"},
+                status=400,
             )
         if not pet_id:
             return Response({"pet_pk": "This field is required"}, status=400)
 
         stats = WalkStats.objects.filter(
-            pet__id=pet_id, date__range=(start_date, end_date)
+            pet__id=pet_id,
+            date__range=(start_date, end_date),
         )
         serializer = WalkStatsSerializer(stats, many=True)
         return Response(serializer.data)

@@ -34,7 +34,9 @@ class Migration(migrations.Migration):
                 (
                     "end_time",
                     models.DateTimeField(
-                        blank=True, help_text="The end time of the walk", null=True
+                        blank=True,
+                        help_text="The end time of the walk",
+                        null=True,
                     ),
                 ),
                 (
@@ -84,13 +86,15 @@ class Migration(migrations.Migration):
                 (
                     "total_duration",
                     models.PositiveIntegerField(
-                        default=0, help_text="Total duration of walks in minutes"
+                        default=0,
+                        help_text="Total duration of walks in minutes",
                     ),
                 ),
                 (
                     "total_walks",
                     models.PositiveIntegerField(
-                        default=0, help_text="Total number of walks"
+                        default=0,
+                        help_text="Total number of walks",
                     ),
                 ),
                 (

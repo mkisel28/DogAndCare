@@ -1,18 +1,23 @@
-from django.db import models
-from django.utils import timezone
+import pytz
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
+from django.utils import timezone
+
 from apps.pets.models import Pet
-import pytz
 
 
 class SymptomCategory(models.Model):
     name = models.CharField(
-        max_length=50, unique=True, help_text="Название категории симптомов"
+        max_length=50,
+        unique=True,
+        help_text="Название категории симптомов",
     )
     description = models.TextField(
-        blank=True, null=True, help_text="Описание категории"
+        blank=True,
+        null=True,
+        help_text="Описание категории",
     )
 
     class Meta:
@@ -44,18 +49,26 @@ class Symptom(models.Model):
 
 class DailyLog(models.Model):
     pet = models.ForeignKey(
-        Pet, on_delete=models.CASCADE, related_name="daily_logs", help_text="Питомец"
+        Pet,
+        on_delete=models.CASCADE,
+        related_name="daily_logs",
+        help_text="Питомец",
     )
     date = models.DateField(default=timezone.now, help_text="Дата лога")
     symptoms = models.ManyToManyField(
-        Symptom, blank=True, related_name="daily_logs", help_text="Симптомы"
+        Symptom,
+        blank=True,
+        related_name="daily_logs",
+        help_text="Симптомы",
     )
 
     created_at = models.DateTimeField(
-        auto_now_add=True, help_text="Дата и время создания записи"
+        auto_now_add=True,
+        help_text="Дата и время создания записи",
     )
     updated_at = models.DateTimeField(
-        auto_now=True, help_text="Дата и время последнего обновления записи"
+        auto_now=True,
+        help_text="Дата и время последнего обновления записи",
     )
 
     class Meta:
@@ -69,7 +82,7 @@ class DailyLog(models.Model):
 
     def clean(self):
         if self.date > timezone.now().date():
-            raise ValidationError("Дата не может быть в будущем.")
+            raise ValidationError("Date cannot be in the future.")
 
     def add_symptoms(self, symptom_ids):
         """Добавить симптомы к логу"""
@@ -89,14 +102,14 @@ class DailyLog(models.Model):
                 user_tz = pytz.timezone(user_timezone)
                 today = timezone.now().astimezone(user_tz).date()
             except pytz.UnknownTimeZoneError:
-                raise ValidationError("Неправильный часовой пояс.")
+                raise ValidationError("Unknown timezone.")
         else:
             today = timezone.now().date()
 
         if isinstance(pet, (int, str)):
             pet = Pet.objects.filter(id=pet).first()
             if not pet:
-                raise ValidationError("Питомец не найден.")
+                raise ValidationError("Pet not found.")
 
         log, created = cls.objects.get_or_create(pet=pet, date=today)
         return log
@@ -178,7 +191,7 @@ def create_default_symptoms(sender, **kwargs):
 
         for category_name, symptoms in categories.items():
             category, created = SymptomCategory.objects.get_or_create(
-                name=category_name
+                name=category_name,
             )
             for symptom_name in symptoms:
                 try:

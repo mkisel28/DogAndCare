@@ -29,7 +29,9 @@ class Migration(migrations.Migration):
                 (
                     "name",
                     models.CharField(
-                        help_text="The name of the breed", max_length=100, unique=True
+                        help_text="The name of the breed",
+                        max_length=100,
+                        unique=True,
                     ),
                 ),
                 (
@@ -61,25 +63,25 @@ class Migration(migrations.Migration):
                 (
                     "min_weight",
                     models.FloatField(
-                        help_text="The minimum weight of the breed in Lbs"
+                        help_text="The minimum weight of the breed in Lbs",
                     ),
                 ),
                 (
                     "max_weight",
                     models.FloatField(
-                        help_text="The maximum weight of the breed in Lbs"
+                        help_text="The maximum weight of the breed in Lbs",
                     ),
                 ),
                 (
                     "min_height",
                     models.FloatField(
-                        help_text="The minimum height of the breed in inches"
+                        help_text="The minimum height of the breed in inches",
                     ),
                 ),
                 (
                     "max_height",
                     models.FloatField(
-                        help_text="The maximum height of the breed in inches"
+                        help_text="The maximum height of the breed in inches",
                     ),
                 ),
             ],
@@ -171,7 +173,9 @@ class Migration(migrations.Migration):
                 (
                     "birth_year",
                     models.IntegerField(
-                        blank=True, help_text="The birth year of the pet", null=True
+                        blank=True,
+                        help_text="The birth year of the pet",
+                        null=True,
                     ),
                 ),
                 (
@@ -249,13 +253,16 @@ class Migration(migrations.Migration):
                 (
                     "is_neutered",
                     models.BooleanField(
-                        default=False, help_text="Whether the pet is neutered"
+                        default=False,
+                        help_text="Whether the pet is neutered",
                     ),
                 ),
                 (
                     "weight",
                     models.FloatField(
-                        blank=True, help_text="The weight of the pet", null=True
+                        blank=True,
+                        help_text="The weight of the pet",
+                        null=True,
                     ),
                 ),
                 (

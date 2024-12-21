@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Country, City, Language
+
+from .models import City, Country, Language
 
 
 class CityInline(admin.TabularInline):

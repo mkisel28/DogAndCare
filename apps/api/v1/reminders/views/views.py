@@ -1,16 +1,24 @@
-from rest_framework import viewsets, permissions
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from rest_framework import permissions, viewsets
 
-from apps.api.v1.reminders.serializer.serializers import ReminderSerializer
-from apps.reminders.models import Reminder
-
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+from apps.api.v1.reminders.serializer.serializers import (
+    ReminderCategorySerializer,
+    ReminderSerializer,
+)
+from apps.reminders.models import Reminder, ReminderCategory
+from utils.pagintaion import CustomPageNumberPagination
 
 
 @extend_schema(tags=["Reminders"])
 class ReminderViewSet(viewsets.ModelViewSet):
-    queryset = Reminder.objects.all()
+    queryset = (
+        Reminder.objects.all()
+        .select_related("owner", "reminder_type", "reminder_type__category")
+        .prefetch_related("pets")
+    )
     serializer_class = ReminderSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
         return self.queryset.filter(owner=self.request.user)
@@ -46,7 +54,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
                         name="Дата напоминания в прошлом",
                         value={
                             "reminder_time": [
-                                "The reminder time cannot be in the past."
+                                "The reminder time cannot be in the past.",
                             ],
                         },
                     ),
@@ -60,7 +68,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
                         name="Не указана частота для повторяющихся напоминаний",
                         value={
                             "frequency_in_minutes": [
-                                "This field is required for recurring reminders."
+                                "This field is required for recurring reminders.",
                             ],
                         },
                     ),
@@ -100,7 +108,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
                         name="Дата напоминания в прошлом",
                         value={
                             "reminder_time": [
-                                "The reminder time cannot be in the past."
+                                "The reminder time cannot be in the past.",
                             ],
                         },
                     ),
@@ -114,7 +122,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
                         name="Не указана частота для повторяющихся напоминаний",
                         value={
                             "frequency_in_minutes": [
-                                "This field is required for recurring reminders."
+                                "This field is required for recurring reminders.",
                             ],
                         },
                     ),
@@ -140,7 +148,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
                         name="Дата напоминания в прошлом",
                         value={
                             "reminder_time": [
-                                "The reminder time cannot be in the past."
+                                "The reminder time cannot be in the past.",
                             ],
                         },
                     ),
@@ -154,7 +162,7 @@ class ReminderViewSet(viewsets.ModelViewSet):
                         name="Не указана частота для повторяющихся напоминаний",
                         value={
                             "frequency_in_minutes": [
-                                "This field is required for recurring reminders."
+                                "This field is required for recurring reminders.",
                             ],
                         },
                     ),
@@ -165,3 +173,34 @@ class ReminderViewSet(viewsets.ModelViewSet):
     )
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
+
+
+@extend_schema(tags=["Reference Data"])
+class ReminderCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ReminderCategory.objects.all().prefetch_related("types")
+    serializer_class = ReminderCategorySerializer
+    authentication_classes = []
+    pagination_class = None
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(
+        summary="Получение списка категорий напоминаний с типами",
+        description="Получение списка всех категорий напоминаний.",
+        responses={
+            200: ReminderCategorySerializer(many=True),
+            401: OpenApiResponse(description="Пользователь не аутентифицирован"),
+        },
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Получение категории напоминания",
+        description="Получение информации о конкретной категории напоминания.",
+        responses={
+            200: ReminderCategorySerializer,
+            401: OpenApiResponse(description="Пользователь не аутентифицирован"),
+        },
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)

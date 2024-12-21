@@ -1,34 +1,28 @@
-from django.contrib.auth.models import User
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.utils import timezone
-
+from allauth.account.models import EmailAddress
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from allauth.account.models import EmailAddress
-from dj_rest_auth.registration.views import VerifyEmailView
-from dj_rest_auth.registration.views import SocialLoginView
-
+from dj_rest_auth.registration.views import SocialLoginView, VerifyEmailView
+from django.contrib.auth.models import User
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.utils.html import strip_tags
 from drf_spectacular.utils import (
-    extend_schema,
     OpenApiExample,
     OpenApiResponse,
+    extend_schema,
 )
-
-from rest_framework import status
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import ValidationError
-
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView
 from rest_framework_simplejwt.token_blacklist.models import (
-    OutstandingToken,
     BlacklistedToken,
+    OutstandingToken,
 )
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
 from apps.api.v1.authentication.serializer.serializers import (
     CustomRegisterSerializer,
@@ -40,9 +34,8 @@ from apps.api.v1.users.serializer.serializers import (
     LogoutSerializer,
     UserSerializer,
 )
-
-from apps.authentication.tasks import send_verification_email
 from apps.authentication.models import EmailVerificationCode
+from apps.authentication.tasks import send_verification_email
 
 
 @extend_schema(
@@ -58,7 +51,7 @@ from apps.authentication.models import EmailVerificationCode
                     name="Код отправлен для авторизации",
                     summary="Пользователь существует и код отправлен для входа",
                     value={"detail": "Verification code sent to email"},
-                )
+                ),
             ],
         ),
         status.HTTP_201_CREATED: OpenApiResponse(
@@ -69,7 +62,7 @@ from apps.authentication.models import EmailVerificationCode
                     name="Пользователь зарегистрирован",
                     summary="Создан новый пользователь и отправлен код для подтверждения",
                     value={"detail": "User registered and verification code sent"},
-                )
+                ),
             ],
         ),
         status.HTTP_400_BAD_REQUEST: OpenApiResponse(
@@ -91,8 +84,7 @@ from apps.authentication.models import EmailVerificationCode
     },
 )
 class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    """
-    Запрос на регистрацию или авторизацию пользователя через email.
+    """Запрос на регистрацию или авторизацию пользователя через email.
 
     В зависимости от состояния пользователя, API выполняет две задачи:
 
@@ -142,7 +134,7 @@ class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
             status_code = status.HTTP_201_CREATED
             data = {"detail": "User registered and verification code sent"}
 
-        self._send_verification_code(user, request)
+        # self._send_verification_code(user, request)
         return Response(data, status=status_code)
 
     @extend_schema(
@@ -159,7 +151,7 @@ class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
                         name="Код отправлен",
                         summary="Код подтверждения отправлен на email",
                         value={"detail": "Verification code sent to email"},
-                    )
+                    ),
                 ],
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
@@ -210,7 +202,8 @@ class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
         self._send_verification_code(user, request)
         return Response(
-            {"detail": "Verification code sent to email"}, status=status.HTTP_200_OK
+            {"detail": "Verification code sent to email"},
+            status=status.HTTP_200_OK,
         )
 
     def _send_verification_code(self, user, request):
@@ -222,7 +215,8 @@ class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
             "request": request,
         }
         html_message = render_to_string(
-            "account/email/confirmation_email.html", context
+            "account/email/confirmation_email.html",
+            context,
         )
         plain_message = strip_tags(html_message)
 
@@ -268,7 +262,7 @@ class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
                     name="Пользователь не найден",
                     summary="User not found",
                     value={"detail": "User not found."},
-                )
+                ),
             ],
         ),
         status.HTTP_400_BAD_REQUEST: OpenApiResponse(
@@ -290,8 +284,7 @@ class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
     },
 )
 class CustomVerifyEmailView(VerifyEmailView):
-    """
-    Подтверждение email и авторизация через JWT.
+    """Подтверждение email и авторизация через JWT.
 
     Этот API выполняет две основные функции:
 
@@ -327,12 +320,15 @@ class CustomVerifyEmailView(VerifyEmailView):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise ValidationError(
-                {"detail": "User not found."}, code=status.HTTP_404_NOT_FOUND
+                {"detail": "User not found."},
+                code=status.HTTP_404_NOT_FOUND,
             )
 
         try:
             verification_code = EmailVerificationCode.objects.get(
-                user=user, code=code, is_used=False
+                user=user,
+                code=code,
+                is_used=False,
             )
         except EmailVerificationCode.DoesNotExist:
             raise ValidationError(
@@ -431,8 +427,7 @@ class CustomVerifyEmailView(VerifyEmailView):
     },
 )
 class APILogoutView(APIView):
-    """
-    API для выхода пользователя
+    """API для выхода пользователя
 
     Этот эндпоинт позволяет авторизованному пользователю выйти из системы и деактивировать его refresh токены.
 
@@ -494,7 +489,8 @@ class APILogoutView(APIView):
                 for token in tokens:
                     BlacklistedToken.objects.get_or_create(token=token)
                 return Response(
-                    {"status": "OK, all tokens blacklisted"}, status=status.HTTP_200_OK
+                    {"status": "OK, all tokens blacklisted"},
+                    status=status.HTTP_200_OK,
                 )
 
             refresh_token = request.data.get("refresh_token", None)
@@ -514,41 +510,40 @@ class APILogoutView(APIView):
                 )
 
             return Response(
-                {"status": "OK, token blacklisted"}, status=status.HTTP_200_OK
+                {"status": "OK, token blacklisted"},
+                status=status.HTTP_200_OK,
             )
         except Exception:
             return Response({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema(
-    tags=["Authentication Token"], summary="Проверка валидности access токена"
+    tags=["Authentication Token"],
+    summary="Проверка валидности access токена",
 )
 class CustomTokenVerifyView(TokenVerifyView):
-    """
-    Эндпоинт для проверки валидности access токена.
+    """Эндпоинт для проверки валидности access токена.
 
     Returns:
     - 200 OK: Если токен действителен.
     - 401 Unauthorized: Если токен недействителен.
-    """
 
-    pass
+    """
 
 
 @extend_schema(
-    tags=["Authentication Token"], summary="Обновление access и refresh токенов"
+    tags=["Authentication Token"],
+    summary="Обновление access и refresh токенов",
 )
 class CustomTokenRefreshView(TokenRefreshView):
-    """
-    Эндпоинт для обновления access токена и refresh токена.
+    """Эндпоинт для обновления access токена и refresh токена.
     После обновления, старый refresh токен деактивируется.
 
     Returns:
     - 200 OK: Если токен успешно обновлен.
     - 401 Unauthorized: Если токен недействителен.
-    """
 
-    pass
+    """
 
 
 @extend_schema(
@@ -562,12 +557,9 @@ class CustomTokenRefreshView(TokenRefreshView):
     },
 )
 class GoogleLogin(SocialLoginView):
-    """
-    Авторизация через Google
-    """
+    """Авторизация через Google"""
 
     adapter_class = GoogleOAuth2Adapter
-    # callback_url = "http://127.0.0.1:8000/api/accounts/google/login/callback/"
     client_class = OAuth2Client
     serializer_class = GoogleLoginSerializer
 
@@ -579,7 +571,8 @@ class GoogleLogin(SocialLoginView):
         user = self.user
         if user is None:
             return Response(
-                {"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "User not found"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         tokens = {

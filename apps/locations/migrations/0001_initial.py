@@ -34,7 +34,9 @@ class Migration(migrations.Migration):
                 (
                     "code",
                     models.CharField(
-                        help_text="Код языка", max_length=10, verbose_name="Код"
+                        help_text="Код языка",
+                        max_length=10,
+                        verbose_name="Код",
                     ),
                 ),
             ],
@@ -66,7 +68,9 @@ class Migration(migrations.Migration):
                 (
                     "code",
                     models.CharField(
-                        help_text="Код страны", max_length=10, verbose_name="Код"
+                        help_text="Код страны",
+                        max_length=10,
+                        verbose_name="Код",
                     ),
                 ),
             ],
@@ -114,7 +118,7 @@ class Migration(migrations.Migration):
                 "verbose_name": "Город",
                 "verbose_name_plural": "Города",
                 "indexes": [
-                    models.Index(fields=["name"], name="locations_c_name_5719ba_idx")
+                    models.Index(fields=["name"], name="locations_c_name_5719ba_idx"),
                 ],
             },
         ),

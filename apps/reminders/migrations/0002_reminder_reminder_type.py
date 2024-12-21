@@ -14,7 +14,10 @@ class Migration(migrations.Migration):
             model_name="reminder",
             name="reminder_type",
             field=models.CharField(
-                blank=True, help_text="Type of reminder", max_length=255, null=True
+                blank=True,
+                help_text="Type of reminder",
+                max_length=255,
+                null=True,
             ),
         ),
     ]

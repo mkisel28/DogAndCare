@@ -1,15 +1,18 @@
-from django.db import models
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from datetime import timedelta
 import random
+from datetime import timedelta
+
+from django.contrib.auth import get_user_model
+from django.db import models
+from django.utils import timezone
 
 User = get_user_model()
 
 
 class EmailVerificationCode(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="email_verification_codes"
+        User,
+        on_delete=models.CASCADE,
+        related_name="email_verification_codes",
     )
     code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -28,12 +31,11 @@ class EmailVerificationCode(models.Model):
 
     @staticmethod
     def generate_code():
-        return "{:06d}".format(random.randint(100000, 999999))
+        return f"{random.randint(100000, 999999):06d}"
 
     @staticmethod
     def create_code(user):
-        """
-        Creates an EmailVerificationCode instance and returns the code
+        """Creates an EmailVerificationCode instance and returns the code
         Returns:
             tuple:
             - instance of EmailVerificationCode

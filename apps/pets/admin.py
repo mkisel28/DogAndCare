@@ -1,5 +1,6 @@
 from django.contrib import admin
-from apps.pets.models import Breed, Pet
+
+from apps.pets.models import Pet
 
 
 @admin.register(Pet)

@@ -1,7 +1,12 @@
-from rest_framework import serializers
-from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import LoginSerializer
 import re
+
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from dj_rest_auth.registration.serializers import (
+    RegisterSerializer,
+    SocialLoginSerializer,
+)
+from dj_rest_auth.serializers import LoginSerializer
+from rest_framework import serializers
 
 
 class CodeSerializer(serializers.Serializer):
@@ -60,13 +65,6 @@ class PasswordResetSerializer(serializers.Serializer):
 class CustomLoginSerializer(LoginSerializer):
     username = None
     email = serializers.EmailField(required=True)
-
-
-# apps/authentication/serializers.py
-
-from dj_rest_auth.registration.serializers import SocialLoginSerializer
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from rest_framework import serializers
 
 
 class GoogleLoginSerializer(SocialLoginSerializer):

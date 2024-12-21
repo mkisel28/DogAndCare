@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                 "verbose_name": "Мультимедиа",
                 "verbose_name_plural": "Мультимедиа",
                 "indexes": [
-                    models.Index(fields=["type"], name="media_multi_type_3ec45a_idx")
+                    models.Index(fields=["type"], name="media_multi_type_3ec45a_idx"),
                 ],
             },
         ),

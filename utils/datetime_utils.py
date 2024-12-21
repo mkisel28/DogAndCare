@@ -1,12 +1,12 @@
 # utils/datetime_utils.py
 from datetime import datetime
-from django.utils import timezone
+
 import pytz
+from django.utils import timezone
 
 
 def convert_to_utc(dt: str | datetime) -> datetime:
-    """
-    Преобразует время в UTC.
+    """Преобразует время в UTC.
 
     :param `dt`:Время в виде строки (форматы: 'YYYY-MM-DD HH:MM' или 'YYYY-MM-DD HH:MM±HHMM') \
                   или объекта datetime, которое нужно преобразовать.
@@ -36,7 +36,7 @@ def convert_to_utc(dt: str | datetime) -> datetime:
                     dt = timezone.make_aware(dt, timezone.get_current_timezone())
                 except ValueError:
                     raise ValueError(
-                        "Формат времени должен быть 'YYYY-MM-DD HH:MM' или 'YYYY-MM-DD HH:MM±HHMM'."
+                        "Формат времени должен быть 'YYYY-MM-DD HH:MM' или 'YYYY-MM-DD HH:MM±HHMM'.",
                     )
 
         if not isinstance(dt, datetime):

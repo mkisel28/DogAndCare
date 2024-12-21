@@ -18,12 +18,9 @@ COPY pyproject.toml poetry.lock ./
 RUN pip install --upgrade pip && \
     pip install poetry
 
-
 RUN poetry config virtualenvs.create false 
-
 RUN poetry install --no-interaction --no-ansi
 
 COPY . .
-
 
 EXPOSE 8000

@@ -3,7 +3,9 @@ from django.db import models
 
 class Multimedia(models.Model):
     url = models.URLField(
-        max_length=2048, help_text="URL изображения", verbose_name="URL изображения"
+        max_length=2048,
+        help_text="URL изображения",
+        verbose_name="URL изображения",
     )
     type = models.CharField(
         max_length=255,
@@ -13,10 +15,15 @@ class Multimedia(models.Model):
         verbose_name="Тип",
     )
     description = models.TextField(
-        null=True, blank=True, help_text="Описание изображения", verbose_name="Описание"
+        null=True,
+        blank=True,
+        help_text="Описание изображения",
+        verbose_name="Описание",
     )
     created_at = models.DateTimeField(
-        auto_now_add=True, help_text="Дата создания", verbose_name="Дата создания"
+        auto_now_add=True,
+        help_text="Дата создания",
+        verbose_name="Дата создания",
     )
 
     class Meta:

@@ -3,7 +3,9 @@ from django.db import models
 
 class Country(models.Model):
     name = models.CharField(
-        max_length=255, help_text="Наименование страны", verbose_name="Страна"
+        max_length=255,
+        help_text="Наименование страны",
+        verbose_name="Страна",
     )
     code = models.CharField(max_length=10, help_text="Код страны", verbose_name="Код")
 
@@ -21,7 +23,9 @@ class Country(models.Model):
 
 class City(models.Model):
     name = models.CharField(
-        max_length=255, help_text="Наименование города", verbose_name="Город"
+        max_length=255,
+        help_text="Наименование города",
+        verbose_name="Город",
     )
     country = models.ForeignKey(
         Country,
@@ -44,7 +48,9 @@ class City(models.Model):
 
 class Language(models.Model):
     name = models.CharField(
-        max_length=255, help_text="Наименование языка", verbose_name="Язык"
+        max_length=255,
+        help_text="Наименование языка",
+        verbose_name="Язык",
     )
     code = models.CharField(max_length=10, help_text="Код языка", verbose_name="Код")
 

@@ -1,9 +1,8 @@
-from django.db import models
-from django.utils import timezone
-from django.core.exceptions import ValidationError
-from apps.pets.models import Pet
 from django.contrib.auth.models import User
-import pytz
+from django.core.exceptions import ValidationError
+from django.db import models
+
+from apps.pets.models import Pet
 
 
 class Walk(models.Model):
@@ -21,10 +20,14 @@ class Walk(models.Model):
     )
     start_time = models.DateTimeField(help_text="The start time of the walk")
     end_time = models.DateTimeField(
-        null=True, blank=True, help_text="The end time of the walk"
+        null=True,
+        blank=True,
+        help_text="The end time of the walk",
     )
     duration = models.PositiveIntegerField(
-        null=True, blank=True, help_text="Duration of the walk in minutes"
+        null=True,
+        blank=True,
+        help_text="Duration of the walk in minutes",
     )
 
     def save(self, *args, **kwargs):
@@ -35,7 +38,8 @@ class Walk(models.Model):
         if self.duration:
             date = self.start_time.date()
             walk_stats, created = WalkStats.objects.get_or_create(
-                pet=self.pet, date=date
+                pet=self.pet,
+                date=date,
             )
             walk_stats.increment_walk(self.duration)
 
@@ -51,10 +55,12 @@ class WalkStats(models.Model):
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name="walk_stats")
     date = models.DateField(help_text="The date of the aggregated walks")
     total_duration = models.PositiveIntegerField(
-        help_text="Total duration of walks in minutes", default=0
+        help_text="Total duration of walks in minutes",
+        default=0,
     )
     total_walks = models.PositiveIntegerField(
-        help_text="Total number of walks", default=0
+        help_text="Total number of walks",
+        default=0,
     )
 
     class Meta:
@@ -68,7 +74,8 @@ class WalkStats(models.Model):
     @staticmethod
     def get_weekly_stats(pet_id, start_date, end_date):
         stats = WalkStats.objects.filter(
-            pet__id=pet_id, date__range=(start_date, end_date)
+            pet__id=pet_id,
+            date__range=(start_date, end_date),
         )
         total_duration = sum(stat.total_duration for stat in stats)
         total_walks = sum(stat.total_walks for stat in stats)
@@ -82,6 +89,7 @@ class WalkStats(models.Model):
     @staticmethod
     def get_stat_day_by_day(pet_id, start_date, end_date):
         stats = WalkStats.objects.filter(
-            pet__id=pet_id, date__range=(start_date, end_date)
+            pet__id=pet_id,
+            date__range=(start_date, end_date),
         ).order_by("-date")
         return stats

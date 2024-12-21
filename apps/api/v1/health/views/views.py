@@ -1,35 +1,29 @@
-from rest_framework import viewsets, permissions
-
-from apps.api.v1.reminders.serializer.serializers import ReminderSerializer
-from apps.reminders.models import Reminder
-
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
-
-from rest_framework import viewsets, permissions, status
-from rest_framework.response import Response
-from apps.pets.models import Pet, Breed
-from apps.health.models import Symptom, SymptomCategory, DailyLog
-from apps.api.v1.health.serializer.serializers import (
-    SymptomSerializer,
-    SymptomCategorySerializer,
-    DailyLogSerializer,
-)
-from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from apps.api.v1.health.serializer.serializers import (
+    DailyLogSerializer,
+    SymptomCategorySerializer,
+    SymptomSerializer,
+)
+from apps.health.models import DailyLog, Symptom, SymptomCategory
+from apps.pets.models import Pet
 
 
 class IsOwner(permissions.BasePermission):
-    """
-    Разрешение, позволяющее пользователю взаимодействовать только со своими объектами.
-    """
+    """Разрешение, позволяющее пользователю взаимодействовать только со своими объектами."""
 
     def has_object_permission(self, request, view, obj):
         return obj.owner == request.user
 
 
 @extend_schema(
-    tags=["Reference Data"], summary="Получение списка доступных категорий симптомов"
+    tags=["Reference Data"],
+    summary="Получение списка доступных категорий симптомов",
 )
 class SymptomCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SymptomCategory.objects.prefetch_related("symptoms").all()

@@ -1,12 +1,13 @@
-from pathlib import Path
-from utils.logging_filters import UserFilter
 import os
 from datetime import timedelta
+from pathlib import Path
 
 import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+
+from utils.logging_filters import UserFilter
 
 sentry_sdk.init(
     dsn="https://0328d2ada8d386146cb1eacb05d22008@o4508060683206656.ingest.us.sentry.io/4508060685893632",
@@ -72,7 +73,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "middleware.jwt.JWTUserMiddleware",
-    "allauth.account.middleware.AccountMiddleware",  # allauth account middleware
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 
@@ -138,7 +139,7 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "unique-snowflake",
-    }
+    },
 }
 
 CACHE_TIMEOUT = 3600
@@ -238,7 +239,7 @@ SOCIALACCOUNT_PROVIDERS = {
         },
         "SCOPE": ["email", "profile"],
         "OAUTH_PKCE_ENABLED": True,
-    }
+    },
 }
 
 LOG_DIR = BASE_DIR / "logs"
@@ -354,12 +355,13 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Redis как брокер сообщений
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get(
-    "CELERY_RESULT_BACKEND", "redis://localhost:6379/0"
+    "CELERY_RESULT_BACKEND",
+    "redis://localhost:6379/0",
 )
 
 # Префикс для задач, чтобы можно было группировать их по проекту
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 минут для задачи
+CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # Мягкий тайм-аут
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"

@@ -30,14 +30,18 @@ class Migration(migrations.Migration):
             model_name="pet",
             name="birth_date",
             field=models.DateField(
-                blank=True, help_text="The birth date of the pet", null=True
+                blank=True,
+                help_text="The birth date of the pet",
+                null=True,
             ),
         ),
         migrations.AlterField(
             model_name="pet",
             name="is_neutered",
             field=models.BooleanField(
-                blank=True, help_text="Whether the pet is neutered", null=True
+                blank=True,
+                help_text="Whether the pet is neutered",
+                null=True,
             ),
         ),
         migrations.AlterField(

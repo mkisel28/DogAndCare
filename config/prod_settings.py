@@ -1,7 +1,7 @@
-from pathlib import Path
-from django.utils.translation import gettext_lazy as _
 import os
+from pathlib import Path
 
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +26,7 @@ DATABASES = {
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", 5432),
         "CONN_MAX_AGE": 600,
-    }
+    },
 }
 
 STATIC_URL = "/dj_static/"

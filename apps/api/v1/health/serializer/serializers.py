@@ -1,10 +1,6 @@
 from rest_framework import serializers
+
 from apps.health.models import DailyLog, Symptom, SymptomCategory
-from apps.pets.models import Breed, Pet
-
-
-from rest_framework import serializers
-from django.contrib.auth.models import User
 
 
 class SymptomCategorySerializer(serializers.ModelSerializer):
@@ -26,7 +22,9 @@ class SymptomSerializer(serializers.ModelSerializer):
 class SymptomRetrieveSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source="category.name", read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
-        queryset=SymptomCategory.objects.all(), source="category", write_only=True
+        queryset=SymptomCategory.objects.all(),
+        source="category",
+        write_only=True,
     )
 
     class Meta:

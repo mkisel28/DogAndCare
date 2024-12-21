@@ -32,13 +32,16 @@ class Migration(migrations.Migration):
                 (
                     "description",
                     models.TextField(
-                        blank=True, help_text="Description of the reminder", null=True
+                        blank=True,
+                        help_text="Description of the reminder",
+                        null=True,
                     ),
                 ),
                 (
                     "created_at",
                     models.DateTimeField(
-                        auto_now_add=True, help_text="When the reminder was created"
+                        auto_now_add=True,
+                        help_text="When the reminder was created",
                     ),
                 ),
                 (
@@ -48,7 +51,8 @@ class Migration(migrations.Migration):
                 (
                     "is_recurring",
                     models.BooleanField(
-                        default=False, help_text="Is this a recurring reminder?"
+                        default=False,
+                        help_text="Is this a recurring reminder?",
                     ),
                 ),
                 (

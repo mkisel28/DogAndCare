@@ -1,7 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import User
-from django.dispatch import receiver
+from django.db import models
 from django.db.models.signals import post_migrate
+from django.dispatch import receiver
 
 GENDERS = [("Male", "Male"), ("Female", "Female")]
 
@@ -42,10 +42,14 @@ PET_SIZES = [
 
 class Breed(models.Model):
     name = models.CharField(
-        max_length=100, unique=True, help_text="The name of the breed"
+        max_length=100,
+        unique=True,
+        help_text="The name of the breed",
     )
     size = models.CharField(
-        max_length=20, choices=PET_SIZES, help_text="The size of the breed"
+        max_length=20,
+        choices=PET_SIZES,
+        help_text="The size of the breed",
     )
     exercise_needs = models.IntegerField(help_text="Exercise needs in minutes per day")
     grooming_requirements = models.IntegerField(help_text="Grooming frequency in days")
@@ -55,10 +59,10 @@ class Breed(models.Model):
     min_weight = models.FloatField(help_text="The minimum weight of the breed in Lbs")
     max_weight = models.FloatField(help_text="The maximum weight of the breed in Lbs")
     min_height = models.FloatField(
-        help_text="The minimum height of the breed in inches"
+        help_text="The minimum height of the breed in inches",
     )
     max_height = models.FloatField(
-        help_text="The maximum height of the breed in inches"
+        help_text="The maximum height of the breed in inches",
     )
 
     def __str__(self):
@@ -67,7 +71,9 @@ class Breed(models.Model):
 
 class Temperament(models.Model):
     name = models.CharField(
-        max_length=50, choices=TEMPERAMENTS, help_text="The name of the temperament"
+        max_length=50,
+        choices=TEMPERAMENTS,
+        help_text="The name of the temperament",
     )
 
     def __str__(self):
@@ -82,13 +88,22 @@ class Pet(models.Model):
         help_text="The owner of the pet",
     )
     type = models.CharField(
-        max_length=20, choices=PET_TYPES, default="Dog", help_text="The type of the pet"
+        max_length=20,
+        choices=PET_TYPES,
+        default="Dog",
+        help_text="The type of the pet",
     )
     avatar = models.ImageField(
-        upload_to="pets", null=True, blank=True, help_text="The avatar of the pet"
+        upload_to="pets",
+        null=True,
+        blank=True,
+        help_text="The avatar of the pet",
     )
     name = models.CharField(
-        max_length=50, null=True, blank=True, help_text="The name of the pet"
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="The name of the pet",
     )
     breed = models.ForeignKey(
         Breed,
@@ -98,18 +113,24 @@ class Pet(models.Model):
         help_text="The breed of the pet",
     )
     birth_date = models.DateField(
-        null=True, blank=True, help_text="The birth date of the pet"
+        null=True,
+        blank=True,
+        help_text="The birth date of the pet",
     )
     sex = models.CharField(null=True, blank=True, max_length=6, choices=GENDERS)
     is_neutered = models.BooleanField(
-        null=True, blank=True, help_text="Whether the pet is neutered"
+        null=True,
+        blank=True,
+        help_text="Whether the pet is neutered",
     )
     weight = models.FloatField(null=True, blank=True, help_text="The weight of the pet")
     created_at = models.DateTimeField(
-        auto_now_add=True, help_text="The date and time the pet was created"
+        auto_now_add=True,
+        help_text="The date and time the pet was created",
     )
     updated_at = models.DateTimeField(
-        auto_now=True, help_text="The date and time the pet was last updated"
+        auto_now=True,
+        help_text="The date and time the pet was last updated",
     )
 
     class Meta:
@@ -122,9 +143,7 @@ class Pet(models.Model):
 
 @receiver(post_migrate)
 def create_default_breed(sender, **kwargs):
-    """
-    Creates default breeds if the Breed table is empty.
-    """
+    """Creates default breeds if the Breed table is empty."""
     if not Breed.objects.exists():
         breeds = [
             {

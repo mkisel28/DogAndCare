@@ -1,6 +1,7 @@
-from django.urls import path, include
 from dj_rest_auth.app_settings import api_settings
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+
 from apps.api.v1.authentication.views.views import (
     APILogoutView,
     CustomTokenRefreshView,
@@ -8,7 +9,6 @@ from apps.api.v1.authentication.views.views import (
     CustomVerifyEmailView,
     EmailAuthRequestView,
 )
-
 
 router = DefaultRouter()
 router.register(r"", EmailAuthRequestView, basename="auth")

@@ -1,11 +1,9 @@
+from dj_rest_auth.jwt_auth import JWTCookieAuthentication
 from django.utils.deprecation import MiddlewareMixin
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import BasePermission
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
-from rest_framework import status
-from dj_rest_auth.jwt_auth import JWTCookieAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 
 class JWTUserMiddleware(MiddlewareMixin):
@@ -15,7 +13,7 @@ class JWTUserMiddleware(MiddlewareMixin):
             user_auth_tuple = jwt_authenticator.authenticate(request)
             if user_auth_tuple is not None:
                 request.user, _ = user_auth_tuple
-        except (InvalidToken, TokenError, AuthenticationFailed) as exc:
+        except (InvalidToken, TokenError, AuthenticationFailed):
             pass
 
         except Exception as exc:

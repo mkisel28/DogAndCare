@@ -37,7 +37,9 @@ class Migration(migrations.Migration):
                 (
                     "description",
                     models.TextField(
-                        blank=True, help_text="Описание категории", null=True
+                        blank=True,
+                        help_text="Описание категории",
+                        null=True,
                     ),
                 ),
             ],
@@ -61,7 +63,9 @@ class Migration(migrations.Migration):
                 (
                     "name",
                     models.CharField(
-                        help_text="Название симптома", max_length=100, unique=True
+                        help_text="Название симптома",
+                        max_length=100,
+                        unique=True,
                     ),
                 ),
                 (
@@ -95,13 +99,15 @@ class Migration(migrations.Migration):
                 (
                     "date",
                     models.DateField(
-                        default=django.utils.timezone.now, help_text="Дата лога"
+                        default=django.utils.timezone.now,
+                        help_text="Дата лога",
                     ),
                 ),
                 (
                     "created_at",
                     models.DateTimeField(
-                        auto_now_add=True, help_text="Дата и время создания записи"
+                        auto_now_add=True,
+                        help_text="Дата и время создания записи",
                     ),
                 ),
                 (

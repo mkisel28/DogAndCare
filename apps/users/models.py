@@ -1,12 +1,12 @@
-from django.db import models
+import os
+
 from django.contrib.auth.models import User
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.db.models.signals import post_migrate
-from PIL import Image
-from django.utils.timezone import now
 from django.utils.crypto import get_random_string
-import os
+from django.utils.timezone import now
+from PIL import Image
 
 
 def user_avatar_upload_path(instance, filename):

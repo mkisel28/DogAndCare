@@ -1,8 +1,7 @@
-from django.urls import path, include
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
 from apps.api.v1.pets.views.views import BreedViewSet, TemperamentViewSet
-
-from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r"breeds", BreedViewSet, basename="breed")

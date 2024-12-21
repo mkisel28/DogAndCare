@@ -1,6 +1,6 @@
 from django.contrib import admin
-from apps.pets.models import Breed, Pet
-from .models import SymptomCategory, Symptom, DailyLog
+
+from .models import DailyLog, Symptom, SymptomCategory
 
 
 @admin.register(SymptomCategory)
