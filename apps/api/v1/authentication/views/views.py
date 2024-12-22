@@ -134,7 +134,7 @@ class EmailAuthRequestView(mixins.CreateModelMixin, viewsets.GenericViewSet):
             status_code = status.HTTP_201_CREATED
             data = {"detail": "User registered and verification code sent"}
 
-        # self._send_verification_code(user, request)
+        self._send_verification_code(user, request)
         return Response(data, status=status_code)
 
     @extend_schema(
