@@ -16,14 +16,14 @@ class PetDetailSerializer(serializers.ModelSerializer):
 
 
 class ReminderTypeSerializer(serializers.ModelSerializer):
-    parent_category_name = serializers.CharField(
+    category_name = serializers.CharField(
         source="category.name",
         read_only=True,
         help_text="Name of the parent category this subcategory belongs to.",
     )
     class Meta:
         model = ReminderType
-        fields = ["id", "name", "description", "parent_category_name"]
+        fields = ["id", "name", "description", "category_name"]
         extra_kwargs = {
             "name": {"help_text": "Name of the subcategory."},
             "description": {"help_text": "Description of the subcategory."},
