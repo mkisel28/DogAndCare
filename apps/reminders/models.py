@@ -27,11 +27,12 @@ class ReminderCategory(models.Model):
         help_text="Is this category active?",
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
 class ReminderType(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     category = models.ForeignKey(
         ReminderCategory,
         on_delete=models.CASCADE,
@@ -46,11 +47,12 @@ class ReminderType(models.Model):
     )
     is_active = models.BooleanField(default=True, help_text="Is this category active?")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.category.name}: {self.name}"
 
 
 class Reminder(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255, help_text="Title of the reminder")
     description = models.TextField(
         null=True,
@@ -79,7 +81,6 @@ class Reminder(models.Model):
         blank=True,
         help_text="Frequency of recurring reminder in minutes",
     )
-    # Связь M2M с собакой
     pets = models.ManyToManyField(
         Pet,
         related_name="reminders",
@@ -98,12 +99,12 @@ class Reminder(models.Model):
         verbose_name = "Reminder"
         verbose_name_plural = "Reminders"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title
 
 
 @receiver(post_migrate)
-def create_default_reminder_types(sender, **kwargs):
+def create_default_reminder_types(sender, **kwargs) -> None:
     from django.db.utils import IntegrityError
 
     if sender.name == "apps.reminders":
