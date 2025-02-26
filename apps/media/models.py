@@ -1,7 +1,9 @@
+import uuid
 from django.db import models
 
 
 class Multimedia(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     url = models.URLField(
         max_length=2048,
         help_text="URL изображения",

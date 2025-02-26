@@ -2,15 +2,11 @@ from allauth.account.models import EmailAddress
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView, VerifyEmailView
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.html import strip_tags
-from drf_spectacular.utils import (
-    OpenApiExample,
-    OpenApiResponse,
-    extend_schema,
-)
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -36,6 +32,8 @@ from apps.api.v1.users.serializer.serializers import (
 )
 from apps.authentication.models import EmailVerificationCode
 from apps.authentication.tasks import send_verification_email
+
+User = get_user_model()
 
 
 @extend_schema(

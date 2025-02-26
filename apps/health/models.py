@@ -1,3 +1,4 @@
+import uuid
 import pytz
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -9,6 +10,7 @@ from apps.pets.models import Pet
 
 
 class SymptomCategory(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
         max_length=50,
         unique=True,
@@ -29,6 +31,7 @@ class SymptomCategory(models.Model):
 
 
 class Symptom(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     category = models.ForeignKey(
         SymptomCategory,
         on_delete=models.CASCADE,
@@ -48,6 +51,7 @@ class Symptom(models.Model):
 
 
 class DailyLog(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pet = models.ForeignKey(
         Pet,
         on_delete=models.CASCADE,

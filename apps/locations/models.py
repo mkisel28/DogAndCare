@@ -1,7 +1,10 @@
+import uuid
+
 from django.db import models
 
 
 class Country(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
         max_length=255,
         help_text="Наименование страны",
@@ -22,6 +25,7 @@ class Country(models.Model):
 
 
 class City(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
         max_length=255,
         help_text="Наименование города",
@@ -47,6 +51,7 @@ class City(models.Model):
 
 
 class Language(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
         max_length=255,
         help_text="Наименование языка",

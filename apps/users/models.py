@@ -1,6 +1,7 @@
 import os
+import uuid
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -15,7 +16,12 @@ def user_avatar_upload_path(instance, filename):
     return os.path.join(f"avatars/{year}", unique_filename)
 
 
+class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+
 class UserProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     avatar = models.ImageField(upload_to=user_avatar_upload_path, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)

@@ -1,4 +1,5 @@
 import random
+import uuid
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
@@ -9,6 +10,7 @@ User = get_user_model()
 
 
 class EmailVerificationCode(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -18,19 +20,19 @@ class EmailVerificationCode(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Код подтверждения для {self.user.email}: {self.code}"
 
-    def is_expired(self):
+    def is_expired(self) -> bool:
         expiration_period = timedelta(minutes=10)
         return timezone.now() > self.created_at + expiration_period
 
-    def mark_as_used(self):
+    def mark_as_used(self) -> None:
         self.is_used = True
         self.save()
 
     @staticmethod
-    def generate_code():
+    def generate_code() -> str:
         return f"{random.randint(100000, 999999):06d}"
 
     @staticmethod

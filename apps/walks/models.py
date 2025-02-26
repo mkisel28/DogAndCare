@@ -1,11 +1,15 @@
-from django.contrib.auth.models import User
+import uuid
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from apps.pets.models import Pet
 
+User = get_user_model()
+
 
 class Walk(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pet = models.ForeignKey(
         Pet,
         on_delete=models.CASCADE,
@@ -52,6 +56,7 @@ class Walk(models.Model):
 
 
 class WalkStats(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name="walk_stats")
     date = models.DateField(help_text="The date of the aggregated walks")
     total_duration = models.PositiveIntegerField(

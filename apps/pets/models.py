@@ -1,8 +1,10 @@
-from django.contrib.auth.models import User
+import uuid
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 
+User = get_user_model()
 GENDERS = [("Male", "Male"), ("Female", "Female")]
 
 TEMPERAMENTS = [
@@ -41,6 +43,7 @@ PET_SIZES = [
 
 
 class Breed(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
         max_length=100,
         unique=True,
@@ -70,6 +73,7 @@ class Breed(models.Model):
 
 
 class Temperament(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
         max_length=50,
         choices=TEMPERAMENTS,
@@ -81,6 +85,7 @@ class Temperament(models.Model):
 
 
 class Pet(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

@@ -1,12 +1,17 @@
-from django.contrib.auth.models import User
+import uuid
+
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 
 from apps.pets.models import Pet
 
+User = get_user_model()
+
 
 class ReminderCategory(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
         max_length=255,
         unique=True,
