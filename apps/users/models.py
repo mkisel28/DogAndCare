@@ -36,7 +36,9 @@ class UserProfile(models.Model):
 
     def save(self, *args, **kwargs):
         # Проверяем, изменился ли аватар
-        if self.pk:  # если объект уже существует в базе
+        if (
+            self.pk and UserProfile.objects.filter(pk=self.pk).exists()
+        ):  # если объект уже существует в базе
             previous = UserProfile.objects.get(pk=self.pk)
             if previous.avatar == self.avatar:
                 super().save(*args, **kwargs)
@@ -62,4 +64,5 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    if hasattr(instance, "profile"):
+        instance.profile.save()
