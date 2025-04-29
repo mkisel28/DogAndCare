@@ -192,7 +192,7 @@ SIMPLE_JWT = {
     "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
 }
 
-SITE_ID = None
+SITE_ID = 1
 
 REST_AUTH = {
     "REST_USE_JWT": True,
@@ -230,7 +230,30 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
-
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APPS": [
+            {
+                "client_id": "1023082709006-vqa494mq701ljf5j52crgct0jbsqb76i.apps.googleusercontent.com",  # Android
+                "secret": "",
+                "key": "",
+            },
+            {
+                "client_id": "1023082709006-p95f9nelpb10ffika22eh3sf4gcjkkve.apps.googleusercontent.com",  # (iOS)
+                "secret": "",
+                "key": "",
+            },
+        ],
+        "SCOPE": [
+            "email",
+            "profile",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+        "OAUTH_PKCE_ENABLED": True,
+    }
+}
 
 LOG_DIR = BASE_DIR / "logs"
 access_log_dir = LOG_DIR / "access"
