@@ -1,16 +1,18 @@
 services:
   db:
     image: postgres:16
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgresDogAndCare
-      POSTGRES_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
-      POSTGRES_DB: dogandcare
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - db_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgresDogAndCare -d dogandcare"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -19,7 +21,7 @@ services:
       resources:
         limits:
           memory: 1G
-          cpus: '1'
+          cpus: "1"
 
   redis:
     image: redis:alpine
@@ -30,7 +32,7 @@ services:
       resources:
         limits:
           memory: 500M
-          cpus: '0.5'
+          cpus: "0.5"
 
   web:
     build: .
@@ -40,19 +42,21 @@ services:
       python manage.py collectstatic --noinput &&
       gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 2 --worker-class=gthread --timeout 120
       "
+    env_file:
+      - .env
     environment:
-      DJANGO_DEBUG: True
-      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,88.218.93.26
-      DB_NAME: dogandcare
-      DB_USER: postgresDogAndCare
-      DB_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
-      DB_HOST: db 
-      DB_PORT: 5432
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/0
-      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://88.218.93.26
-      CORS_ALLOW_CREDENTIALS: True
-      CSRF_TRUSTED_ORIGINS: http://localhost:3000,http://88.218.93.26
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      CELERY_BROKER_URL: ${REDIS_URL}
+      CELERY_RESULT_BACKEND: ${REDIS_URL}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
     volumes:
       - django_static_volume:/app/staticfiles
       - django_media_volume:/app/mediafiles
@@ -68,8 +72,7 @@ services:
       resources:
         limits:
           memory: 1G
-          cpus: '2'
-
+          cpus: "2"
 
   nginx:
     build: ./nginx
@@ -85,18 +88,19 @@ services:
       - web_net
     restart: always
 
-
   celery1:
     build: .
     command: celery -A config worker --loglevel=info --concurrency=4 --hostname=worker1@%h --max-tasks-per-child=1000
+    env_file:
+      - .env
     environment:
-      DB_NAME: dogandcare
-      DB_USER: postgresDogAndCare
-      DB_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
-      DB_HOST: db
-      DB_PORT: 5432
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      CELERY_BROKER_URL: ${REDIS_URL}
+      CELERY_RESULT_BACKEND: ${REDIS_URL}
     networks:
       - web_net
     depends_on:
@@ -107,19 +111,21 @@ services:
       resources:
         limits:
           memory: 500M
-          cpus: '0.5'
+          cpus: "0.5"
 
   celery2:
     build: .
     command: celery -A config worker --loglevel=info --concurrency=4 --hostname=worker2@%h --max-tasks-per-child=1000
+    env_file:
+      - .env
     environment:
-      DB_NAME: dogandcare
-      DB_USER: postgresDogAndCare
-      DB_PASSWORD: jdArcjkAjfoM!kdlslFLVDds3dS@s
-      DB_HOST: db
-      DB_PORT: 5432
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      CELERY_BROKER_URL: ${REDIS_URL}
+      CELERY_RESULT_BACKEND: ${REDIS_URL}
     networks:
       - web_net
     depends_on:
@@ -130,17 +136,19 @@ services:
       resources:
         limits:
           memory: 500M
-          cpus: '0.5'
+          cpus: "0.5"
 
   flower:
     build: .
-    command: celery -A config flower 
+    command: celery -A config flower
+    env_file:
+      - .env
     environment:
-      BROKER_URL: redis://redis:6379/0
-      RESULT_BACKEND: redis://redis:6379/0
-      FLOWER_BASIC_AUTH: test:test
+      BROKER_URL: ${REDIS_URL}
+      RESULT_BACKEND: ${REDIS_URL}
+      FLOWER_BASIC_AUTH: ${FLOWER_BASIC_AUTH}
     ports:
-      - "5555:5555"
+      - ${FLOWER_PORT}:5555
     networks:
       - web_net
     depends_on:
@@ -157,4 +165,3 @@ volumes:
   django_static_volume:
   django_media_volume:
   postgres_data:
-

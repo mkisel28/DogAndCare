@@ -68,12 +68,23 @@ class CustomLoginSerializer(LoginSerializer):
 
 
 class GoogleLoginSerializer(SocialLoginSerializer):
-    access_token = serializers.CharField()
+    access_token = serializers.CharField(required=False, allow_blank=True)
+    id_token = serializers.CharField(required=False, allow_blank=True)
     code = None
 
     class Meta:
-        fields = ("access_token",)
+        fields = ("access_token", "id_token")
 
     def validate(self, attrs):
+        token = attrs.get("access_token") or attrs.get("id_token")
+
+        if not token:
+            raise serializers.ValidationError(
+                "access_token or id_token is required.", code=400
+            )
+
+        if not attrs.get("access_token") and attrs.get("id_token"):
+            attrs["access_token"] = attrs["id_token"]
+
         self.adapter_class = GoogleOAuth2Adapter
         return super().validate(attrs)

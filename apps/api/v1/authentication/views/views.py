@@ -546,7 +546,6 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 @extend_schema(
     tags=["Authentication"],
-    summary="Авторизация через Google",
     request=GoogleLoginSerializer,
     responses={
         201: AuthUserSerializer,
@@ -555,7 +554,30 @@ class CustomTokenRefreshView(TokenRefreshView):
     },
 )
 class GoogleLogin(SocialLoginView):
-    """Авторизация через Google"""
+    """
+    Авторизация через Google.
+
+    Поддерживаются два варианта авторизации:
+
+    1. По access_token:
+
+    2. По id_token:
+
+    Оба поля являются взаимоисключающими, но хотя бы одно должно быть передано.
+
+    Пример запроса:
+    ```
+    {
+        "id_token": "eyJhbGciOiJSUzI1NiIs..."
+    }
+    ```
+    Пример запроса:
+    ```
+    {
+        "access_token": "ya29.a0AfH6SM..."
+    }
+    ```
+    """
 
     adapter_class = GoogleOAuth2Adapter
     client_class = OAuth2Client

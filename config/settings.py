@@ -346,11 +346,11 @@ LOGGING = {
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 465
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 465))
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = "mkisel28@gmail.com"
-EMAIL_HOST_PASSWORD = "yopf icrp hzoo ztxx"
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
@@ -364,7 +364,7 @@ CELERY_RESULT_BACKEND = os.environ.get(
 # Префикс для задач, чтобы можно было группировать их по проекту
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # Мягкий тайм-аут
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
@@ -373,12 +373,10 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_RETRY_DELAY = 60
 CELERY_MAX_RETRIES = 3
 CELERY_ACKS_LATE = True  # задачи будут отмечены выполненными только после завершения
-
 CELERY_WORKER_MAX_TASKS_PER_CHILD = (
-    1000  # Перезапуск воркера после 1000 задач (защита от утечек памяти)
+    1000  # Перезапуск воркера после 1000 задач
 )
 CELERY_WORKER_CONCURRENCY = 4  # Число воркеров
-
 CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE = "UTC"
 
