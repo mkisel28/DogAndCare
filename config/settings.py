@@ -192,7 +192,7 @@ SIMPLE_JWT = {
     "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
 }
 
-SITE_ID = 1
+SITE_ID = None
 
 REST_AUTH = {
     "REST_USE_JWT": True,
@@ -230,19 +230,7 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "SCOPE": [
-            "profile",
-            "email",
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-        },
-        "SCOPE": ["email", "profile"],
-        "OAUTH_PKCE_ENABLED": True,
-    },
-}
+
 
 LOG_DIR = BASE_DIR / "logs"
 access_log_dir = LOG_DIR / "access"
