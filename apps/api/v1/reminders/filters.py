@@ -33,6 +33,19 @@ class ReminderFilter(filters.FilterSet):
         input_formats=["%Y-%m-%dT%H:%M:%SZ"],
         help_text="Filter reminders created after this date (UTC)",
     )
+    ordering = filters.OrderingFilter(
+        fields=(
+            ("created_at", "created_at"),
+            ("reminder_time", "reminder_time"),
+            ("title", "title"),
+        ),
+        field_labels={
+            "created_at": "Creation Date",
+            "reminder_time": "Reminder Time",
+            "title": "Title",
+        },
+        help_text="Sort by: created_at, -created_at, reminder_time, -reminder_time, title, -title",
+    )
 
     class Meta:
         model = Reminder
@@ -43,6 +56,7 @@ class ReminderFilter(filters.FilterSet):
             "reminder_type",
             "is_recurring",
             "created_after",
+            "ordering",
         ]
 
     def filter_search(self, queryset, name, value):

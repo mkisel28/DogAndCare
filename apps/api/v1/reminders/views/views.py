@@ -24,13 +24,9 @@ class ReminderViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPageNumberPagination
     filter_backends = [
         filters.DjangoFilterBackend,
-        drf_filters.OrderingFilter,
-        drf_filters.SearchFilter,
     ]
     filterset_class = ReminderFilter
-    ordering_fields = ["created_at", "reminder_time", "title"]
-    search_fields = ["title", "description"]
-    ordering = ["-created_at"]
+
 
     def get_queryset(self):
         return self.queryset.filter(owner=self.request.user)
