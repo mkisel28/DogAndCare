@@ -1,6 +1,9 @@
+from django_filters import rest_framework as filters
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from rest_framework import filters as drf_filters
 from rest_framework import permissions, viewsets
 
+from apps.api.v1.reminders.filters import ReminderFilter
 from apps.api.v1.reminders.serializer.serializers import (
     ReminderCategorySerializer,
     ReminderSerializer,
@@ -19,6 +22,15 @@ class ReminderViewSet(viewsets.ModelViewSet):
     serializer_class = ReminderSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = CustomPageNumberPagination
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        drf_filters.OrderingFilter,
+        drf_filters.SearchFilter,
+    ]
+    filterset_class = ReminderFilter
+    ordering_fields = ["created_at", "reminder_time", "title"]
+    search_fields = ["title", "description"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         return self.queryset.filter(owner=self.request.user)
