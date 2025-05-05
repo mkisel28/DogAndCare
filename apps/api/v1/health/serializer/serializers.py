@@ -3,15 +3,21 @@ from rest_framework import serializers
 from apps.health.models import DailyLog, Symptom, SymptomCategory
 
 
+class SymptomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Symptom
+        fields = ["id", "name"]
+
+
 class SymptomCategorySerializer(serializers.ModelSerializer):
-    symptoms = serializers.StringRelatedField(many=True, read_only=True)
+    symptoms = SymptomSerializer(many=True, read_only=True)
 
     class Meta:
         model = SymptomCategory
         fields = ["id", "name", "description", "symptoms"]
 
 
-class SymptomSerializer(serializers.ModelSerializer):
+class SymptomWithCategorySerializer(serializers.ModelSerializer):
     category = SymptomCategorySerializer(read_only=True)
 
     class Meta:

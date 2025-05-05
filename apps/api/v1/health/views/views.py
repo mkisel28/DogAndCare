@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from apps.api.v1.health.serializer.serializers import (
     DailyLogSerializer,
     SymptomCategorySerializer,
-    SymptomSerializer,
+    SymptomWithCategorySerializer,
 )
 from apps.health.models import DailyLog, Symptom, SymptomCategory
 from apps.pets.models import Pet
@@ -39,7 +39,7 @@ class SymptomViewSet(viewsets.ReadOnlyModelViewSet):
         .prefetch_related("category__symptoms")
         .all()
     )
-    serializer_class = SymptomSerializer
+    serializer_class = SymptomWithCategorySerializer
     pagination_class = None
     authentication_classes = []
 
